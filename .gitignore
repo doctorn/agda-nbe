@@ -1,0 +1,11 @@
+*.agdai
+MAlonzo/**
+_build/
+html/
+.direnv/*
+
+*.swp
+*.swo
+*.vim
+
+**/.DS_Store
