@@ -1,5 +1,3 @@
-# `agda-catex`
+# `agda-tdpe`
 
 > _(Working title.)_
-
-Normalising composites with generalised free extensions.
