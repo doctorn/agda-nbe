@@ -2,11 +2,17 @@ module TDPE.Contexts {ℓ} (𝒯 : Set ℓ) where
 
 open import Level
 
+infixl 4 _·_
+
 data 𝒞 : Set ℓ where
   𝟙   : 𝒞
   _·_ : 𝒞 → 𝒯 → 𝒞
 
 [_] = λ A → 𝟙 · A
+
+_⊕_ : 𝒞 → 𝒞 → 𝒞
+Γ ⊕ 𝟙       = Γ
+Γ ⊕ (Δ · A) = (Γ ⊕ Δ) · A
 
 data 𝒲 : 𝒞 → 𝒞 → Set ℓ where
   ϵ₀ : 𝒲 𝟙 𝟙
