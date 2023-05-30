@@ -21,7 +21,7 @@ env:
   AGDA: agda -Werror +RTS -M3.5G -H3.5G -A128M -RTS -i. -i src/
 
 jobs:
-  test-ra:
+  test-tdpe:
     runs-on: ubuntu-latest
     steps:
 
