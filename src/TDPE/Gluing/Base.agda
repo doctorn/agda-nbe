@@ -6,6 +6,7 @@ module TDPE.Gluing.Base where
 NOTE(@doctorn)
 Proof of correctness of the TDPE algorithm via a formal categorical gluing construction.
 For the proof, we're going to need the following ingredients:
+
  - a notion of cartesian closed category with chosen products and exponentials (𝒞𝒞𝒞);
 -}
 import TDPE.Gluing.Categories.Category.ContextualCartesian
