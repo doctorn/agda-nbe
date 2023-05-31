@@ -1,7 +1,6 @@
 {-# OPTIONS --without-K --safe #-}
 
-
-module TDPE.Gluing.Base {a} (𝒰 : Set a) where
+module TDPE.Gluing.Base where
 
 {-
 NOTE(@doctorn)
@@ -15,6 +14,9 @@ import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
  - a notion of strictly structure prserving functor;
  - natural transformations between these;
  - an initial object in the induced 2-category;
+-}
+import TDPE.Gluing.Syntax
+{-
  - construction of classifying objects;
  - a category of weakenings;
 -}
