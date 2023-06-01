@@ -53,3 +53,15 @@ setoid = record { Carrier = A ; _≈_ = _≈_ ; isEquivalence = is-equiv }
 import Relation.Binary.Reasoning.Setoid as Reasoning
 
 module ≈-Reasoning = Reasoning setoid
+
+module _ {b ℓ'} {B : Set b} {S : Rel B ℓ'} (is-equiv : IsEquivalence S) where
+
+  private
+    module E = IsEquivalence is-equiv
+
+  induct : ∀ (f : A → B)
+           → (∀ {x y} → R x y → S (f x) (f y))
+           → ∀ {x y} → x ≈ y → S (f x) (f y)
+  induct f p refl              = E.refl
+  induct f p (step qs (fwd q)) = E.trans (induct f p qs) (p q)
+  induct f p (step qs (bwd q)) = E.trans (induct f p qs) (E.sym (p q))
