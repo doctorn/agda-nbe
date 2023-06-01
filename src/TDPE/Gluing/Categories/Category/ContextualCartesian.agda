@@ -6,7 +6,7 @@ module TDPE.Gluing.Categories.Category.ContextualCartesian {o ℓ e} (𝒞 : Cat
 
 open import Level
 open import Categories.Object.Terminal 𝒞 using (Terminal)
-open import Categories.Object.Product 𝒞 using (IsProduct)
+open import Categories.Object.Product 𝒞 using (IsProduct; IsProduct⇒Product; Product)
 open Category 𝒞
 
 record ContextualCartesian (𝒰 : Set o) : Set (levelOfTerm 𝒞) where
@@ -25,5 +25,9 @@ record ContextualCartesian (𝒰 : Set o) : Set (levelOfTerm 𝒞) where
 
     extensions : ∀ {Γ A} → IsProduct (π {Γ} {A}) (𝓏 {Γ} {A})
 
-  ⟨_,_⟩ : ∀ {Δ Γ A} → Δ ⇒ Γ → Δ ⇒ [ A ] → Δ ⇒ Γ · A
-  ⟨_,_⟩ = IsProduct.⟨_,_⟩ extensions
+  module Term = Terminal terminal
+
+  module _ {Γ A} where
+    module Ext = Product (IsProduct⇒Product (extensions {Γ} {A}))
+
+    open Ext using (⟨_,_⟩) public

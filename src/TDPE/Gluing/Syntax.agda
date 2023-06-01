@@ -4,7 +4,7 @@ module TDPE.Gluing.Syntax {a} (𝒰 : Set a) where
 
 open import Level
 
-open import TDPE.Gluing.Weakenings 𝒰 using (ℭ; _ᵀ; _·_; 𝟙; `_`; _⇒_)
+open import TDPE.Gluing.Contexts 𝒰
 import TDPE.Gluing.Util.Equivalence as E
 
 open import Categories.Category using (Category)
@@ -16,10 +16,10 @@ infix 4 _↦₀_ _↦_
 private
   variable
     Γ Δ Ξ Ω : ℭ
-    A B : 𝒰 ᵀ
+    A B : 𝒰ᵀ
 
 mutual
-  data 𝔗𝔪₀ : ℭ → 𝒰 ᵀ → Set a where
+  data 𝔗𝔪₀ : ℭ → 𝒰ᵀ → Set a where
     -- variables
     𝓏     : 𝔗𝔪₀ (Γ · A) A
     p     : 𝔗𝔪₀ Γ B → 𝔗𝔪₀ (Γ · A) B
@@ -42,13 +42,13 @@ _∘_ : 𝔗𝔪 Δ Γ → 𝔗𝔪 Ξ Δ → 𝔗𝔪 Ξ Γ
 !       ∘ δ = !
 (γ ∷ a) ∘ δ = (γ ∘ δ) ∷ (a [ δ ])
 
-id : ∀ {Γ} → 𝔗𝔪 Γ Γ
-id {𝟙}     = !
-id {Γ · A} = π id ∷ 𝓏
-
 -- de bruijin lifiting
 ↑[_] : 𝔗𝔪 Δ Γ → 𝔗𝔪 (Δ · A) (Γ · A)
 ↑[ γ ] = π γ ∷ 𝓏
+
+id : ∀ {Γ} → 𝔗𝔪 Γ Γ
+id {𝟙}     = !
+id {Γ · A} = ↑[ id ]
 
 -- singleton
 ⟨_⟩ : 𝔗𝔪₀ Γ A → 𝔗𝔪 Γ (𝟙 · A)
@@ -69,11 +69,12 @@ p t       [ γ ∷ _ ]' = t [ γ ]'
 
 mutual
   data _↦₀_ : 𝔗𝔪₀ Γ A → 𝔗𝔪₀ Γ A → Set a where
-    Λβ₀ : ∀ {f : 𝔗𝔪₀ (Γ · A) B} {x : 𝔗𝔪₀ Γ A} → Λ f ⦅ x ⦆ ↦₀ f [ id ∷ x ]
-    Λη₀ : ∀ {f : 𝔗𝔪₀ Γ (A ⇒ B)} → f ↦₀ Λ ((p f) ⦅ 𝓏 ⦆)
+    Λβ₀ : ∀ {f : 𝔗𝔪₀ (Γ · A) B} → p (Λ f) ⦅ 𝓏 ⦆ ↦₀ f
+    Λη₀ : ∀ {f : 𝔗𝔪₀ Γ (A ⇒ B)} → f ↦₀ Λ ((f [ π id ]) ⦅ 𝓏 ⦆)
     v𝓏₀ : ∀ {γ : 𝔗𝔪 Δ Γ} {a : 𝔗𝔪₀ Δ A} → (𝓏 [ γ ∷ a ]) ↦₀ a
     vp₀ : ∀ {t : 𝔗𝔪₀ Γ B} {γ : 𝔗𝔪 Δ Γ} {a : 𝔗𝔪₀ Δ A} → (p t) [ γ ∷ a ] ↦₀ t [ γ ]
 
+    p-step : ∀ {s t : 𝔗𝔪₀ Γ A} → s ↦₀ t → p s ↦₀ p {A = B} t
     app-stepₗ : ∀ {f g : 𝔗𝔪₀ Γ (A ⇒ B)} {x : 𝔗𝔪₀ Γ A} → f ↦₀ g → f ⦅ x ⦆ ↦₀ g ⦅ x ⦆
     app-stepᵣ : ∀ {f : 𝔗𝔪₀ Γ (A ⇒ B)} {x y : 𝔗𝔪₀ Γ A} → x ↦₀ y → f ⦅ x ⦆ ↦₀ f ⦅ y ⦆
     Λ-step    : ∀ {f g : 𝔗𝔪₀ (Γ · A) B} → f ↦₀ g → Λ f ↦₀ Λ g
@@ -98,19 +99,19 @@ module _ {Γ A} where
 module _ {Δ Γ} where
   module S = E (_↦_ {Δ} {Γ})
 
-project : {γ δ : 𝔗𝔪 Δ Γ} {a b : 𝔗𝔪₀ Δ A} → γ ∷ a S.≈ δ ∷ b → a C.≈ b
-project = S.induct C.is-equiv P I
-  where P : 𝔗𝔪 Δ (Γ · A) → 𝔗𝔪₀ Δ A
-        P (_ ∷ a) = a
+𝒵 : 𝔗𝔪 Δ (Γ · A) → 𝔗𝔪₀ Δ A
+𝒵 (_ ∷ a) = a
 
-        I : {γ δ : 𝔗𝔪 Δ (Γ · A)} → γ ↦ δ → P γ C.≈ P δ
+project : {γ δ : 𝔗𝔪 Δ Γ} {a b : 𝔗𝔪₀ Δ A} → γ ∷ a S.≈ δ ∷ b → a C.≈ b
+project = S.induct C.is-equiv 𝒵 I
+  where I : {γ δ : 𝔗𝔪 Δ (Γ · A)} → γ ↦ δ → 𝒵 γ C.≈ 𝒵 δ
         I (∷-stepₗ x) = C.refl
         I (∷-stepᵣ x) = C.unit x
 
-Λβ : ∀ {f : 𝔗𝔪₀ (Γ · A) B} {x : 𝔗𝔪₀ Γ A} → Λ f ⦅ x ⦆ C.≈ f [ id ∷ x ]
+Λβ : ∀ {f : 𝔗𝔪₀ (Γ · A) B} → p (Λ f) ⦅ 𝓏 ⦆ C.≈ f
 Λβ = C.unit Λβ₀
 
-Λη : ∀ {f : 𝔗𝔪₀ Γ (A ⇒ B)} → f C.≈ Λ ((p f) ⦅ 𝓏 ⦆)
+Λη : ∀ {f : 𝔗𝔪₀ Γ (A ⇒ B)} → f C.≈ Λ ((f [ π id ]) ⦅ 𝓏 ⦆)
 Λη = C.unit Λη₀
 
 v𝓏 : ∀ {γ : 𝔗𝔪 Δ Γ} {a : 𝔗𝔪₀ Δ A} → (𝓏 [ γ ∷ a ]) C.≈ a
@@ -207,8 +208,9 @@ sb-assoc = C.unit sb-assoc₀
   }
 
 open import TDPE.Gluing.Categories.Category.ContextualCartesian 𝕋𝕞
+open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed 𝕋𝕞
 
-𝕋𝕞-CC : ContextualCartesian (𝒰 ᵀ)
+𝕋𝕞-CC : ContextualCartesian 𝒰ᵀ
 𝕋𝕞-CC = record
   { terminal = record
     { ⊤ = 𝟙
@@ -235,3 +237,39 @@ open import TDPE.Gluing.Categories.Category.ContextualCartesian 𝕋𝕞
         unique {δ = δ ∷ b} {a = ! ∷ a} p₁ p₂ =
           ∷-cong₂ (S.trans (S.sym p₁) (S.trans πβ ∘-identityˡ))
                   (C.trans v𝓏 (C.trans (C.sym (project p₂)) v𝓏))
+
+𝕋𝕞-CCC : ContextualCartesianClosed 𝒰
+𝕋𝕞-CCC = record
+  { cartesian = 𝕋𝕞-CC
+  ; Λ = λ t → ! ∷ Λ (𝒵 t)
+  ; eval = eval
+  ; β = {!!}
+  ; unique = {!!}
+  }
+  where open S.≈-Reasoning
+
+        eval : 𝔗𝔪 (𝟙 · A ⇒ B · A) (𝟙 · B)
+        eval = ! ∷ p 𝓏 ⦅ 𝓏 ⦆
+
+        β : ∀ (f : 𝔗𝔪 (Δ · A) (𝟙 · B))
+            → eval ∘ (! ∷ p (Λ (𝒵 f)) ∷ 𝓏 [ ! ∷ 𝓏 ]) S.≈ f
+        β (! ∷ f) = begin
+            ! ∷ (p 𝓏 ⦅ 𝓏 ⦆) [ γ ]
+          ≈⟨ ∷-congᵣ sb-app ⟩
+            ! ∷ ((p 𝓏) [ γ ] ⦅ 𝓏 [ γ ] ⦆)
+          ≈⟨ ∷-congᵣ (C.unit (app-stepₗ vp₀)) ⟩
+            ! ∷ (𝓏 [ (! ∷ p (Λ f)) ]) ⦅ 𝓏 [ γ ] ⦆
+          ≈⟨ ∷-congᵣ (C.unit (app-stepₗ v𝓏₀)) ⟩
+            ! ∷ p (Λ f) ⦅ 𝓏 [ γ ] ⦆
+          ≈⟨ ∷-congᵣ (C.unit (app-stepᵣ v𝓏₀)) ⟩
+            ! ∷ p (Λ f) ⦅ 𝓏 [ ! ∷ 𝓏 ] ⦆
+          ≈⟨ ∷-congᵣ (C.unit (app-stepᵣ v𝓏₀)) ⟩
+            ! ∷ (p (Λ f)) ⦅ 𝓏 ⦆
+          ≈⟨ ∷-congᵣ Λβ ⟩
+            ! ∷ f
+          ∎
+          where γ = ! ∷ p (Λ f) ∷ (𝓏 [ ! ∷ 𝓏 ])
+
+        η : ∀ (f : 𝔗𝔪 Δ (𝟙 · A ⇒ B))
+            → f S.≈ ! ∷ Λ (𝒵 (f ∘ (π id)) ⦅ 𝓏 ⦆)
+        η (! ∷ f) = ∷-congᵣ Λη

@@ -7,15 +7,7 @@ open import Categories.Object.Terminal using (Terminal)
 
 open import Relation.Binary.PropositionalEquality as PE using (_≡_)
 
-data _ᵀ {a} (𝒰 : Set a) : Set a where
-  `_` : 𝒰 → 𝒰 ᵀ
-  _⇒_ : 𝒰 ᵀ → 𝒰 ᵀ → 𝒰 ᵀ
-
-infixl 5 _·_
-
-data ℭ : Set a where
-  𝟙 : ℭ
-  _·_ : ℭ → 𝒰 ᵀ → ℭ
+open import TDPE.Gluing.Contexts 𝒰
 
 data 𝒲 : ℭ → ℭ → Set a where
   ϵ₀ : 𝒲 𝟙 𝟙
@@ -102,11 +94,9 @@ terminal = record
 module _ {ℓ e} (𝒞 : Category a ℓ e) where
 
   open import Categories.Functor
-  open import Categories.Functor.Properties using (Faithful)
-  open import Categories.Object.Product 𝒞 using (IsProduct)
   open import TDPE.Gluing.Categories.Category.ContextualCartesian 𝒞
 
-  module _ (CC : ContextualCartesian (𝒰 ᵀ)) where
+  module _ (CC : ContextualCartesian (𝒰ᵀ)) where
 
     private
       module 𝒞 = Category 𝒞
@@ -117,7 +107,7 @@ module _ {ℓ e} (𝒞 : Category a ℓ e) where
       open HomReasoning
 
     ⟦_⟧₀ : ℭ → 𝒞.Obj
-    ⟦ 𝟙     ⟧₀ = Terminal.⊤ CC.terminal
+    ⟦ 𝟙     ⟧₀ = CC.Term.⊤
     ⟦ Γ · A ⟧₀ = ⟦ Γ ⟧₀ CC.· A
 
     ⟦_⟧₁ : ∀ {Γ Δ} → 𝒲 Γ Δ → ⟦ Γ ⟧₀ 𝒞.⇒ ⟦ Δ ⟧₀
@@ -127,7 +117,7 @@ module _ {ℓ e} (𝒞 : Category a ℓ e) where
 
     ⟦_⟧-identity : ∀ {Γ} → ⟦ ϵ {Γ} ⟧₁ ≈ 𝒞.id {⟦ Γ ⟧₀}
     ⟦_⟧-identity {𝟙}     = Equiv.refl
-    ⟦_⟧-identity {Γ · _} = IsProduct.unique CC.extensions I identityʳ
+    ⟦_⟧-identity {Γ · _} = CC.Ext.unique I identityʳ
       where I : π 𝒞.∘ 𝒞.id ≈ ⟦ ϵ {Γ} ⟧₁ 𝒞.∘ π
             I = begin
                 π 𝒞.∘ 𝒞.id
@@ -155,21 +145,21 @@ module _ {ℓ e} (𝒞 : Category a ℓ e) where
         (⟦ w₂ ⟧₁ 𝒞.∘ ⟦ w₁ ⟧₁) 𝒞.∘ π
       ≈⟨ assoc ⟩
         ⟦ w₂ ⟧₁ 𝒞.∘ (⟦ w₁ ⟧₁ 𝒞.∘ π)
-      ≈⟨ ∘-resp-≈ʳ (Equiv.sym (IsProduct.project₁ CC.extensions)) ⟩
+      ≈⟨ ∘-resp-≈ʳ (Equiv.sym CC.Ext.project₁) ⟩
         ⟦ w₂ ⟧₁ 𝒞.∘ (π 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩)
       ≈⟨ sym-assoc ⟩
         (⟦ w₂ ⟧₁ 𝒞.∘ π) 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩
       ∎
-    ⟦_⟧-homomorphism {w₁ = ω₂ w₁} {ω₂ w₂} = IsProduct.unique CC.extensions I II
+    ⟦_⟧-homomorphism {w₁ = ω₂ w₁} {ω₂ w₂} = CC.Ext.unique I II
       where I = begin
                 π 𝒞.∘ ⟨ ⟦ w₂ ⟧₁ 𝒞.∘ π , 𝓏 ⟩ 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩
               ≈⟨ sym-assoc ⟩
                 (π 𝒞.∘ ⟨ ⟦ w₂ ⟧₁ 𝒞.∘ π , 𝓏 ⟩) 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩
-              ≈⟨ ∘-resp-≈ˡ (IsProduct.project₁ CC.extensions) ⟩
+              ≈⟨ ∘-resp-≈ˡ CC.Ext.project₁ ⟩
                 (⟦ w₂ ⟧₁ 𝒞.∘ π) 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩
               ≈⟨ assoc ⟩
                 ⟦ w₂ ⟧₁ 𝒞.∘ (π 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩)
-              ≈⟨ ∘-resp-≈ʳ (IsProduct.project₁ CC.extensions) ⟩
+              ≈⟨ ∘-resp-≈ʳ CC.Ext.project₁ ⟩
                 ⟦ w₂ ⟧₁ 𝒞.∘ (⟦ w₁ ⟧₁ 𝒞.∘ π)
               ≈⟨ sym-assoc ⟩
                 (⟦ w₂ ⟧₁ 𝒞.∘ ⟦ w₁ ⟧₁) 𝒞.∘ π
@@ -181,9 +171,9 @@ module _ {ℓ e} (𝒞 : Category a ℓ e) where
                 𝓏 𝒞.∘ ⟨ ⟦ w₂ ⟧₁ 𝒞.∘ π , 𝓏 ⟩ 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩
               ≈⟨ sym-assoc ⟩
                 (𝓏 𝒞.∘ ⟨ ⟦ w₂ ⟧₁ 𝒞.∘ π , 𝓏 ⟩) 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩
-              ≈⟨ ∘-resp-≈ˡ (IsProduct.project₂ CC.extensions) ⟩
+              ≈⟨ ∘-resp-≈ˡ CC.Ext.project₂ ⟩
                 𝓏 𝒞.∘ ⟨ ⟦ w₁ ⟧₁ 𝒞.∘ π , 𝓏 ⟩
-              ≈⟨ IsProduct.project₂ CC.extensions ⟩
+              ≈⟨ CC.Ext.project₂ ⟩
                 𝓏
               ∎
 
