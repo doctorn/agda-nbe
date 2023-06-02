@@ -45,7 +45,7 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
   ⟦ 𝓏       ⟧C = CC.𝓏
   ⟦ p t     ⟧C = ⟦ t ⟧C 𝒞.∘ CC.π
   ⟦ Λ t     ⟧C = CCC.Λ ⟦ t ⟧C
-  ⟦ f ⦅ x ⦆ ⟧C = ⟦ f ⟧C CCC.⦅ ⟦ x ⟧C ⦆
+  ⟦ f ⦅ x ⦆ ⟧C = CCC.eval 𝒞.∘ CC.⟨ ⟦ f ⟧C , ⟦ x ⟧C ⟩
   ⟦ t [ γ ] ⟧C = ⟦ t ⟧C 𝒞.∘ ⟦ γ ⟧S
 
   ⟦ !     ⟧S = CC.Term.!
@@ -121,20 +121,35 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
           I (∷-stepₗ x) = CC.Ext.⟨⟩-cong₂ (I x) refl
           I (∷-stepᵣ x) = CC.Ext.⟨⟩-cong₂ refl (II x)
 
-          II (Λβ₀ {Γ}) = trans (CCC.β _ _)
-                         (∘-resp-≈ʳ (CC.Ext.⟨⟩-cong₂ (sym (⟦_⟧-identity {Γ})) refl))
-          II Λη₀ = trans (CCC.η _) {!!}
+          -- FIXME@(doctorn) why does it look like an SMT solver threw up on my code?
+          II (Λβ₀ {Γ}) =
+            trans (CCC.β′ _ _)
+                  (∘-resp-≈ʳ (CC.Ext.⟨⟩-cong₂ (sym (⟦_⟧-identity {Γ})) refl))
+          II {Δ} {A} Λη₀ =
+            trans (CCC.η _)
+                  (CCC.Λ-cong
+                    (∘-resp-≈ʳ
+                      (CC.Ext.⟨⟩-cong₂
+                        (trans (∘-resp-≈ˡ (sym identityʳ))
+                               (trans assoc
+                                      (∘-resp-≈ʳ (trans (∘-resp-≈ˡ (sym (⟦_⟧-identity {Δ})))
+                                                        (sym (⟦_⟧-π-lemma {γ = (𝕋𝕞.id {Δ})}))))))
+                        refl)))
           II v𝓏₀ = CC.Ext.project₂
           II vp₀ = trans assoc (∘-resp-≈ʳ CC.Ext.project₁)
-          II (app-stepₗ x) = {!!}
-          II (app-stepᵣ x) = {!!}
-          II (Λ-step x)    = {!!}
+          II (p-step x)    = ∘-resp-≈ˡ (II x)
+          II (app-stepₗ x) = ∘-resp-≈ʳ (CC.Ext.⟨⟩-cong₂ (II x) refl)
+          II (app-stepᵣ x) = ∘-resp-≈ʳ (CC.Ext.⟨⟩-cong₂ refl (II x))
+          II (Λ-step x)    = CCC.Λ-cong (II x)
           II (sb-stepₗ x)  = ∘-resp-≈ˡ (II x)
           II (sb-stepᵣ x)  = ∘-resp-≈ʳ (I x)
           II (sb-id₀ {Γ})  = trans (∘-resp-≈ʳ (⟦_⟧-identity {Γ})) identityʳ
-          II sb-app₀       = {!!}
-          II sb-lam₀       = {!!}
-          II sb-assoc₀     = {!!}
+          II sb-app₀       = trans assoc (∘-resp-≈ʳ CC.Ext.∘-distribʳ-⟨⟩)
+          II (sb-lam₀ {γ = γ}) =
+            trans (CCC.subst _ _)
+                  (CCC.Λ-cong (∘-resp-≈ʳ (CC.Ext.⟨⟩-cong₂ (sym (⟦_⟧-π-lemma {γ = γ})) refl)))
+          II (sb-assoc₀ {γ = γ} {δ}) =
+            trans assoc (∘-resp-≈ʳ (sym (⟦_⟧-homomorphism {δ = δ} {γ})))
 
   ⟦_⟧ : Functor 𝕋𝕞 𝒞
   ⟦_⟧ = record

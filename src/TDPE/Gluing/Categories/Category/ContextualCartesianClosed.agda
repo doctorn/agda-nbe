@@ -23,15 +23,63 @@ record ContextualCartesianClosed : Set (levelOfTerm 𝒞) where
 
     eval : ∀ {A B} → [ A ^ B ] · A ⇒ [ B ]
 
+  ↑[_] : ∀ {Δ Γ A} → Δ ⇒ Γ → (Δ · A) ⇒ (Γ · A)
+  ↑[ f ] = ⟨ f ∘ π , 𝓏 ⟩
+
+  field
     β : ∀ {Γ A B} (f : Γ · A ⇒ [ B ])
         → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
 
     unique : ∀ {Γ A B} {g : (Γ · A) ⇒ [ B ]} {h : Γ ⇒ [ A ^ B ]}
-             → eval ∘ ⟨ h ∘ π , 𝓏 ⟩ ≈ g
+             → eval ∘ ↑[ h ] ≈ g
              → h ≈ Λ g
 
-  η : ∀ {Γ A B} (f : Γ ⇒ [ A ^ B ]) → f ≈ Λ (eval ∘ ⟨ f ∘ π , 𝓏 ⟩)
+  η : ∀ {Γ A B} (f : Γ ⇒ [ A ^ B ]) → f ≈ Λ (eval ∘ ↑[ f ])
   η f = unique Equiv.refl
+
+  β′ : ∀ {Γ A B} (f : Γ · A ⇒ [ B ]) (x : Γ ⇒ [ A ])
+       → eval ∘ ⟨ Λ f , x ⟩ ≈ f ∘ ⟨ id , x ⟩
+  β′ f x =  begin
+      eval ∘ ⟨ Λ f , x ⟩
+    ≈⟨
+      Equiv.sym (∘-resp-≈ʳ
+        (Ext.⟨⟩-cong₂
+          (Equiv.trans
+            assoc
+            (Equiv.trans (∘-resp-≈ʳ Ext.project₁) identityʳ)
+          )
+          Ext.project₂)
+        )
+    ⟩
+      eval ∘ (⟨ (Λ f ∘ π) ∘ ⟨ id , x ⟩ , 𝓏 ∘ ⟨ id , x ⟩ ⟩)
+    ≈⟨ Equiv.sym (∘-resp-≈ʳ Ext.∘-distribʳ-⟨⟩) ⟩
+      eval ∘ (⟨ Λ f ∘ π , 𝓏 ⟩ ∘ ⟨ id , x ⟩)
+    ≈⟨ sym-assoc ⟩
+      (eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩) ∘ ⟨ id , x ⟩
+    ≈⟨ ∘-resp-≈ˡ (β f) ⟩
+      f ∘ ⟨ id , x ⟩
+    ∎
+    where open HomReasoning
 
   Λ-cong : ∀ {Γ A B} {f g : Γ · A ⇒ [ B ]} → f ≈ g → Λ f ≈ Λ g
   Λ-cong {f = f} {g} f≈g = unique (Equiv.trans (β f) f≈g)
+
+  subst : ∀ {Δ Γ A B} (f : Γ · A ⇒ [ B ]) (γ : Δ ⇒ Γ)
+          → Λ f ∘ γ ≈ Λ (f ∘ ↑[ γ ])
+  subst f γ = unique (begin
+      eval ∘ ⟨ (Λ f ∘ γ) ∘ π , 𝓏 ⟩
+    ≈⟨
+      Equiv.sym (∘-resp-≈ʳ (Ext.⟨⟩-cong₂
+        (Equiv.trans assoc
+                     (Equiv.trans (∘-resp-≈ʳ Ext.project₁) sym-assoc)) Ext.project₂)
+      )
+    ⟩
+      eval ∘ ⟨ (Λ f ∘ π) ∘ ↑[ γ ] , 𝓏 ∘ ↑[ γ ] ⟩
+    ≈⟨ Equiv.sym (∘-resp-≈ʳ Ext.∘-distribʳ-⟨⟩) ⟩
+      eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ∘ ↑[ γ ]
+    ≈⟨ sym-assoc ⟩
+      (eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩) ∘ ↑[ γ ]
+    ≈⟨ ∘-resp-≈ˡ (β f) ⟩
+      f ∘ ↑[ γ ]
+    ∎)
+    where open HomReasoning
