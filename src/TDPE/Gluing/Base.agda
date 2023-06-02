@@ -26,6 +26,7 @@ import TDPE.Gluing.Weakenings
 --- a presheaf construction;
 
 --- the definition of the glued universe;
+import TDPE.Gluing.Glue
 
 --- proof that it supports the necessary structure;
 
