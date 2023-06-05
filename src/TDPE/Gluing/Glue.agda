@@ -10,7 +10,6 @@ open import Categories.NaturalTransformation
 open import Categories.Category.Construction.Comma
 open import Categories.Category.Construction.Presheaves
 open import Categories.Category.Construction.Functors
-open import Categories.Category.Instance.Setoids
 open import Categories.Yoneda
 
 open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧)

@@ -2,4 +2,16 @@ import TDPE.Base
 import TDPE.Contexts
 import TDPE.Eval
 import TDPE.Examples.Futamura
+import TDPE.Gluing.Base
+import TDPE.Gluing.Categories.Category.ContextualCartesian
+import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
+import TDPE.Gluing.Categories.Category.Instance.Setoids
+import TDPE.Gluing.Categories.Functor.ContextualCartesian
+import TDPE.Gluing.Categories.Functor.ContextualCartesianClosed
+import TDPE.Gluing.Contexts
+import TDPE.Gluing.Glue
+import TDPE.Gluing.Interpretation
+import TDPE.Gluing.Syntax
+import TDPE.Gluing.Util.Equivalence
+import TDPE.Gluing.Weakenings
 import TDPE.Types

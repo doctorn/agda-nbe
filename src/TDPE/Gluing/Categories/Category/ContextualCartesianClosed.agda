@@ -3,7 +3,7 @@
 open import Categories.Category
 
 module TDPE.Gluing.Categories.Category.ContextualCartesianClosed
-  {o ℓ e} (𝒞 : Category o ℓ e) (𝒰 : Set o) where
+  {o ℓ e} (𝒞 : Category o ℓ e) {a} (𝒰 : Set a) where
 
 open import Level
 
@@ -12,7 +12,7 @@ open import TDPE.Gluing.Contexts 𝒰 using (𝒰ᵀ) renaming (_⇒_ to _^_)
 
 open Category 𝒞
 
-record ContextualCartesianClosed : Set (levelOfTerm 𝒞) where
+record ContextualCartesianClosed : Set (a ⊔ levelOfTerm 𝒞) where
   field
     cartesian : ContextualCartesian (𝒰ᵀ)
 

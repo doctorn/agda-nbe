@@ -9,7 +9,7 @@ open import Categories.Object.Terminal 𝒞 using (Terminal)
 open import Categories.Object.Product 𝒞 using (IsProduct; IsProduct⇒Product; Product)
 open Category 𝒞
 
-record ContextualCartesian (𝒰 : Set o) : Set (levelOfTerm 𝒞) where
+record ContextualCartesian {a} (𝒰 : Set a) : Set (a ⊔ levelOfTerm 𝒞) where
   infixl 5 _·_
 
   field
