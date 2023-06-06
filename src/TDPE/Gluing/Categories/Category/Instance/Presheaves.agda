@@ -140,6 +140,13 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
       { ⟨_,_⟩ = λ {Δ} γ a → ⟨_,_⟩ {Δ = Δ} γ a
       ; project₁ = λ {Δ} {γ} {_} x → cong (NaturalTransformation.η γ _) x
       ; project₂ = λ {Δ} {_} {a} x → tt , proj₂ (cong (NaturalTransformation.η a _) x)
-      ; unique = {!!}
+      ; unique = λ {Δ} {h} {γ} {a} x y z → unique {Δ = Δ} {h} {γ} {a} x y z
       }
     }
+    where unique : ∀ {Γ A} {Δ} {h : Δ ⇒ Γ ·′ A} {γ : Δ ⇒ Γ} {a : Δ ⇒ ⊤′ ·′ A}
+                   → π ∘ h ≈ γ → 𝓏 ∘ h ≈ a → ⟨ γ , a ⟩ ≈ h
+          unique {Γ} {A} {Δ} πh≈γ 𝓏h≈a {X} {x} {y} x≈y =
+            Γx.sym (πh≈γ (Δx.sym x≈y)) , proj₂ (Ax.sym (𝓏h≈a (Δx.sym x≈y)))
+            where module Γx = IsEquivalence (Setoid.isEquivalence (Functor.₀ Γ X))
+                  module Ax = IsEquivalence (Setoid.isEquivalence (Functor.₀ (⊤′ ·′ A) X))
+                  module Δx = IsEquivalence (Setoid.isEquivalence (Functor.₀ Δ X))
