@@ -20,7 +20,7 @@ open import Categories.Category.Instance.Setoids public
 open import TDPE.Gluing.Categories.Category.ContextualCartesian (Setoids ℓ ℓ)
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed (Setoids ℓ ℓ)
 
-open Category (Setoids ℓ ℓ)
+open Category (Setoids ℓ ℓ) public
 
 ⊤′ : Setoid ℓ ℓ
 ⊤′ = record
@@ -43,6 +43,15 @@ infixl 6 _·′_
 
 _·′_ : Obj → Obj → Obj
 Γ ·′ A = ×-setoid Γ A
+
+↑ : ∀ {A} → A ⇒ ⊤′ ·′ A
+↑ = record { _⟨$⟩_ = tt ,_ ; cong = tt ,_ }
+
+↓ : ∀ {A} → ⊤′ ·′ A ⇒ A
+↓ = record { _⟨$⟩_ = proj₂ ; cong = proj₂ }
+
+fmap : ∀ {A B} → A ⇒ B → ⊤′ ·′ A ⇒ ⊤′ ·′ B
+fmap f = ↑ ∘ f ∘ ↓
 
 ⟨_,_⟩ : ∀ {Γ A} {Δ} → Δ ⇒ Γ → Δ ⇒ ⊤′ ·′ A → Δ ⇒ Γ ·′ A
 ⟨ γ , a ⟩ = record
@@ -90,8 +99,8 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
   ∥ ` A ` ∥ = ∣ A ∣
   ∥ A ^ B ∥ = ∥ A ∥ ^′ ∥ B ∥
 
-  Setoids-CC : ContextualCartesian 𝒰ᵀ
-  Setoids-CC = record
+  CC : ContextualCartesian 𝒰ᵀ
+  CC = record
     { terminal = record
       { ⊤ = ⊤′
       ; ⊤-is-terminal = record { ! = ! ; !-unique = !-unique }
@@ -114,9 +123,9 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
                   module A = IsEquivalence (Setoid.isEquivalence (⊤′ ·′ A))
                   module Δ = IsEquivalence (Setoid.isEquivalence Δ)
 
-  Setoids-CCC : ContextualCartesianClosed 𝒰
-  Setoids-CCC = record
-    { cartesian = Setoids-CC
+  CCC : ContextualCartesianClosed 𝒰
+  CCC = record
+    { cartesian = CC
     ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {∥ A ∥} {∥ B ∥} f
     ; eval = λ {A} {B} → eval {∥ A ∥} {∥ B ∥}
     ; β = λ {Γ} {A} {B} → β {Γ} {∥ A ∥} {∥ B ∥}
