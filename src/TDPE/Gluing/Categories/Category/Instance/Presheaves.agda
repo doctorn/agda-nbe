@@ -10,6 +10,7 @@ module TDPE.Gluing.Categories.Category.Instance.Presheaves
 open import Function.Equality using (_⟨$⟩_; cong)
 
 open import Relation.Binary using (Setoid; IsEquivalence)
+import Relation.Binary.Reasoning.Setoid as Reasoning
 
 open import Data.Unit.Polymorphic using (⊤; tt)
 open import Data.Product using (_,_; proj₁; proj₂)
@@ -119,6 +120,57 @@ P ^′ Q = record
   ; F-resp-≈ = λ f≈g α≈β x≈y → α≈β ((proj₁ x≈y) , (𝒞.∘-resp-≈ f≈g (proj₂ x≈y)))
   }
 
+Λ : ∀ {Γ A B} → Γ ·′ A ⇒ ⊤′ ·′ B → Γ ⇒ ⊤′ ·′ A ^′ B
+Λ {Γ} {A} {B} f = record
+  { η = λ X → S.↑ S.∘ Λ₀′ X
+  ; commute = {!!}
+  ; sym-commute = {!!}
+  }
+  where module Γ = Functor Γ
+        module B = Functor B
+        module A^B = Functor (A ^′ B)
+        module f = NaturalTransformation f
+
+        e : ∀ X → Setoid.Carrier (Γ.₀ X)
+            → ∀ Y → Setoid.Carrier (Functor.₀ (A ·′ Y.₀ X) Y) → Setoid.Carrier (B.₀ Y)
+        e X θ Y (a , h) = proj₂ (f.η Y ⟨$⟩ (Γ.₁ h ⟨$⟩ θ , a))
+
+        e′ : ∀ X → Setoid.Carrier (Γ.₀ X)
+             → ∀ Y → (Functor.₀ (A ·′ Y.₀ X) Y) S.⇒ B.₀ Y
+        e′ X θ Y = record
+          { _⟨$⟩_ = e X θ Y
+          ; cong = λ x → proj₂ (cong (f.η Y) (Γ.F-resp-≈ (proj₂ x) refl , proj₁ x))
+          }
+          where open IsEquivalence (Setoid.isEquivalence (Γ.₀ X))
+
+        Λ₀ : ∀ X → Setoid.Carrier (Γ.₀ X) → Setoid.Carrier (A^B.₀ X)
+        Λ₀ X θ = record
+          { η = λ Y → e′ X θ Y
+          ; commute = λ f {x} {y} x≈y → {!!}
+          ; sym-commute = {!!}
+          }
+
+        Λ₀′ : ∀ X → Γ.₀ X S.⇒ A^B.₀ X
+        Λ₀′ X = record
+          { _⟨$⟩_ = Λ₀ X
+          ; cong = λ θ≈θ′ x≈y → proj₂ (cong (f.η _) (Γ.F-resp-≈ (proj₂ x≈y) θ≈θ′ , proj₁ x≈y))
+          }
+
+eval : ∀ {A B} → ⊤′ ·′ (A ^′ B) ·′ A ⇒ ⊤′ ·′ B
+eval = record
+  { η = λ X → record
+    { _⟨$⟩_ = λ γ → tt , NaturalTransformation.η (proj₂ (proj₁ γ)) X ⟨$⟩ ((proj₂ γ) , 𝒞.id)
+    ; cong = λ γ≈δ → tt , proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ , IsEquivalence.refl 𝒞.equiv)
+    }
+  ; commute = {!!}
+  ; sym-commute = {!!}
+  }
+
+{-
+
+β : ∀ {Γ A B} (f : Γ ·′ A ⇒ ⊤′ ·′ B) → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
+β f x = tt , {!!}
+
 module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
 
   open import TDPE.Gluing.Contexts 𝒰 renaming (_⇒_ to _^_)
@@ -150,3 +202,13 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
             where module Γx = IsEquivalence (Setoid.isEquivalence (Functor.₀ Γ X))
                   module Ax = IsEquivalence (Setoid.isEquivalence (Functor.₀ (⊤′ ·′ A) X))
                   module Δx = IsEquivalence (Setoid.isEquivalence (Functor.₀ Δ X))
+
+  CCC : ContextualCartesianClosed 𝒰
+  CCC = record
+    { cartesian = CC
+    ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {∥ A ∥} {∥ B ∥} f
+    ; eval = λ {A} {B} → eval {∥ A ∥} {∥ B ∥}
+    ; β = λ {Γ} {A} {B} → β {Γ} {∥ A ∥} {∥ B ∥}
+    ; unique = {!!}
+    }
+-}
