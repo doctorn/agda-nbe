@@ -186,16 +186,39 @@ P ^′ Q = record
                 module ΓEquivZ = IsEquivalence (Setoid.isEquivalence (Γ.₀ Z))
                 module AEquiv = IsEquivalence (Setoid.isEquivalence (A.₀ X))
 
-{-
 eval : ∀ {A B} → ⊤′ ·′ (A ^′ B) ·′ A ⇒ ⊤′ ·′ B
-eval = ntHelper(record
-  { η = λ X → record
-    { _⟨$⟩_ = λ γ → NaturalTransformation.η (proj₂ (proj₁ γ)) X ⟨$⟩ ((proj₂ γ) , 𝒞.id)
-    ; cong = λ γ≈δ → proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ , IsEquivalence.refl 𝒞.equiv)
-    }
-  ; commute = {!!}
+eval {A} {B} = ntHelper(record
+  { η = ϵ
+  ; commute = commute
   })
+  where module A^B·A = Functor (⊤′ ·′ (A ^′ B) ·′ A)
+        module A = Functor A
+        module B = Functor (⊤′ ·′ B)
 
+        ϵ : ∀ X → A^B·A.₀ X S.⇒ B.₀ X
+        ϵ X = record
+          { _⟨$⟩_ = λ γ → NaturalTransformation.η (proj₂ (proj₁ γ)) X ⟨$⟩ ((proj₂ γ) , 𝒞.id)
+          ; cong = λ γ≈δ → proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ , IsEquivalence.refl 𝒞.equiv)
+          }
+
+        commute : ∀ {X Y} (f : X 𝒞.⇒ Y) → ϵ X S.∘ A^B·A.₁ f S.≈ B.₁ f S.∘ ϵ Y
+        commute {X} {Y} f {(tt , x₁) , y₁} {(tt , x₂) , y₂} ((tt , x₁≈x₂) , y₁≈y₂) = begin
+            x₁.η X ⟨$⟩ (A.₁ f ⟨$⟩ y₁ , f 𝒞.∘ 𝒞.id )
+          ≈⟨  cong (x₁.η X) (IsEquivalence.refl (Setoid.isEquivalence (A.₀ X))
+                            , 𝒞.Equiv.trans 𝒞.identityʳ (𝒞.Equiv.sym (𝒞.Equiv.trans 𝒞.identityˡ 𝒞.identityˡ)))
+          ⟩
+            x₁.η X ⟨$⟩ (Functor.₁ (Env A Y) f ⟨$⟩ (y₁ , 𝒞.id))
+          ≈⟨ x₁≈x₂ (A.F-resp-≈ 𝒞.Equiv.refl y₁≈y₂ , 𝒞.Equiv.refl) ⟩
+            x₂.η X ⟨$⟩ (Functor.₁ (Env A Y) f ⟨$⟩ (y₂ , 𝒞.id))
+          ≈⟨ x₂.commute f (IsEquivalence.refl (Setoid.isEquivalence (Functor.₀ (Env A Y) Y))) ⟩
+            B.₁ f ⟨$⟩ (x₂.η Y ⟨$⟩ (y₂ , 𝒞.id))
+          ∎
+          where open Reasoning (B.₀ X)
+
+                module x₁ = NaturalTransformation x₁
+                module x₂ = NaturalTransformation x₂
+
+{-
 β : ∀ {Γ A B} (f : Γ ·′ A ⇒ ⊤′ ·′ B) → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
 β f x = tt , {!!}
 
