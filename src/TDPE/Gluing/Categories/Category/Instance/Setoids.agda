@@ -78,18 +78,16 @@ A ^′ B = hom-setoid {A} {B}
 Λ {Γ} f = record
   { _⟨$⟩_ = λ γ → tt , record
     { _⟨$⟩_ = λ a → proj₂ (f ⟨$⟩ (γ , a))
-    ; cong = λ x → proj₂ (cong f (IsEquivalence.refl (Setoid.isEquivalence Γ)  , x))
+    ; cong = λ x → proj₂ (cong f (Setoid.refl Γ  , x))
     }
   ; cong = λ f≈g → tt , λ a≈b → proj₂ (cong f (f≈g , a≈b))
   }
 
 eval : ∀ {A B} → ⊤′ ·′ (A ^′ B) ·′ A ⇒ ⊤′ ·′ B
-eval = record { _⟨$⟩_ = λ γ → tt , proj₂ (proj₁ γ) ⟨$⟩ proj₂ γ
-              ; cong = λ γ≈δ → tt , proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ)
-              }
-
-β : ∀ {Γ A B} (f : Γ ·′ A ⇒ ⊤′ ·′ B) → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
-β {B = B} f (γ≈δ , a≈b) = cong f (γ≈δ , a≈b)
+eval = record
+  { _⟨$⟩_ = λ γ → tt , proj₂ (proj₁ γ) ⟨$⟩ proj₂ γ
+  ; cong = λ γ≈δ → tt , proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ)
+  }
 
 module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
 
@@ -128,11 +126,6 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
     { cartesian = CC
     ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {∥ A ∥} {∥ B ∥} f
     ; eval = λ {A} {B} → eval {∥ A ∥} {∥ B ∥}
-    ; β = λ {Γ} {A} {B} → β {Γ} {∥ A ∥} {∥ B ∥}
-    ; unique = λ {Γ} {A} {B} {g} {h} → unique {Γ} {∥ A ∥} {∥ B ∥} {g} {h}
+    ; β = λ f x → cong f x
+    ; unique = λ x y → tt , λ z → proj₂ (x (y , z))
     }
-    where unique : ∀ {Γ A B} {g : Γ ·′ A ⇒ ⊤′ ·′ B} {h : Γ ⇒ ⊤′ ·′ A ^′ B}
-                   → eval ∘ ⟨ h ∘ π , 𝓏 ⟩ ≈ g
-                   → h ≈ Λ g
-          unique {B = B} ϵ⟨hπ,𝓏⟩≈g γ≈δ = tt , λ a≈b → proj₂ (ϵ⟨hπ,𝓏⟩≈g (γ≈δ , a≈b))
-            where open IsEquivalence (Setoid.isEquivalence B)

@@ -220,9 +220,6 @@ eval {A} {B} = ntHelper(record
                 module x₁ = NaturalTransformation x₁
                 module x₂ = NaturalTransformation x₂
 
--- β : ∀ {Γ A B} (f : Γ ·′ A ⇒ ⊤′ ·′ B) → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
--- β = ?
-
 module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
 
   open import TDPE.Gluing.Contexts 𝒰 renaming (_⇒_ to _^_)
@@ -267,5 +264,34 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
                       )
                       x
         )
-    ; unique = {!!}
+    ; unique = λ {Γ} {A} {B} {g} {h} → unique {Γ} {∥ A ∥} {∥ B ∥} {g} {h}
     }
+    where unique : ∀ {Γ A B} {g : Γ ·′ A ⇒ ⊤′ ·′ B} {h : Γ ⇒ ⊤′ ·′ A ^′ B}
+                   → eval ∘ ⟨ h ∘ π , 𝓏 ⟩ ≈ g
+                   → h ≈ Λ g
+          unique {Γ} {A} {B} {g} {h} ϵ⟨hπ,𝓏⟩≈g {X} {θ} {θ′} θ≈θ′ = tt , I
+            where module Γ = Functor Γ
+                  module A^B = Functor (A ^′ B)
+                  module ⊤·A^B = Functor (⊤′ ·′ A ^′ B)
+                  module A = Functor A
+                  module B = Functor (⊤′ ·′ B)
+
+                  module h = NaturalTransformation h
+                  module Λg = NaturalTransformation (Λ g)
+
+                  I : Setoid._≈_ (A^B.₀ X) (proj₂ (h.η X ⟨$⟩ θ)) (proj₂ (Λg.η X ⟨$⟩ θ′))
+                  I {Y} {x₁ , y₁} {x₂ , y₂} (x₁≈x₂ , y₁≈y₂) = begin
+                      NaturalTransformation.η (proj₂ (h.η X ⟨$⟩ θ)) Y ⟨$⟩ (x₁ , y₁)
+                    ≈⟨
+                      cong (NaturalTransformation.η (proj₂ (h.η X ⟨$⟩ θ)) Y)
+                           (Setoid.refl (A.₀ Y) , 𝒞.Equiv.sym 𝒞.identityʳ)
+                    ⟩
+                      NaturalTransformation.η (proj₂ (h.η X ⟨$⟩ θ)) Y ⟨$⟩ (x₁ , y₁ 𝒞.∘ 𝒞.id)
+                    ≡⟨⟩
+                      NaturalTransformation.η (proj₂ (⊤·A^B.₁ y₁ ⟨$⟩ (h.η X ⟨$⟩ θ))) Y ⟨$⟩ (x₁ , 𝒞.id)
+                    ≈⟨ proj₂ (h.sym-commute y₁ (Setoid.refl (Γ.₀ X))) (Setoid.refl (A.₀ Y) , 𝒞.Equiv.refl) ⟩
+                      NaturalTransformation.η (proj₂ (h.η Y ⟨$⟩ (Γ.₁ y₁ ⟨$⟩ θ))) Y ⟨$⟩ (x₁ , 𝒞.id)
+                    ≈⟨ ϵ⟨hπ,𝓏⟩≈g ((Γ.F-resp-≈ y₁≈y₂ θ≈θ′) , x₁≈x₂) ⟩
+                      NaturalTransformation.η g Y ⟨$⟩ (Γ.₁ y₂ ⟨$⟩ θ′ , x₂)
+                    ∎
+                    where open Reasoning (B.₀ Y)
