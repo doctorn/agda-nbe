@@ -2,6 +2,7 @@
 
 module TDPE.Gluing.Glue {a} (𝒰 : Set a) where
 
+{-
 open import Level
 
 open import Categories.Category
@@ -49,5 +50,6 @@ open import TDPE.Gluing.Contexts 𝒰
 open import TDPE.Gluing.Categories.Category.ContextualCartesian Gl
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed Gl
 
-Gl-CC : ContextualCartesian (Lift (suc a) 𝒰)
-Gl-CC = {!!}
+-- CC : ContextualCartesian (Lift (suc a) 𝒰)
+-- CC = {!!}
+-}
