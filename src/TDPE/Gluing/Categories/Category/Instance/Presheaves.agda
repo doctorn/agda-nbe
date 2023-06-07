@@ -204,13 +204,15 @@ eval {A} {B} = ntHelper(record
         commute : ∀ {X Y} (f : X 𝒞.⇒ Y) → ϵ X S.∘ A^B·A.₁ f S.≈ B.₁ f S.∘ ϵ Y
         commute {X} {Y} f {(tt , x₁) , y₁} {(tt , x₂) , y₂} ((tt , x₁≈x₂) , y₁≈y₂) = begin
             x₁.η X ⟨$⟩ (A.₁ f ⟨$⟩ y₁ , f 𝒞.∘ 𝒞.id )
-          ≈⟨  cong (x₁.η X) (IsEquivalence.refl (Setoid.isEquivalence (A.₀ X))
-                            , 𝒞.Equiv.trans 𝒞.identityʳ (𝒞.Equiv.sym (𝒞.Equiv.trans 𝒞.identityˡ 𝒞.identityˡ)))
+          ≈⟨
+            cong (x₁.η X) ( Setoid.refl (A.₀ X)
+                          , 𝒞.Equiv.trans 𝒞.identityʳ (𝒞.Equiv.sym (𝒞.Equiv.trans 𝒞.identityˡ 𝒞.identityˡ))
+                          )
           ⟩
             x₁.η X ⟨$⟩ (Functor.₁ (Env A Y) f ⟨$⟩ (y₁ , 𝒞.id))
           ≈⟨ x₁≈x₂ (A.F-resp-≈ 𝒞.Equiv.refl y₁≈y₂ , 𝒞.Equiv.refl) ⟩
             x₂.η X ⟨$⟩ (Functor.₁ (Env A Y) f ⟨$⟩ (y₂ , 𝒞.id))
-          ≈⟨ x₂.commute f (IsEquivalence.refl (Setoid.isEquivalence (Functor.₀ (Env A Y) Y))) ⟩
+          ≈⟨ x₂.commute f (Setoid.refl (Functor.₀ (Env A Y) Y)) ⟩
             B.₁ f ⟨$⟩ (x₂.η Y ⟨$⟩ (y₂ , 𝒞.id))
           ∎
           where open Reasoning (B.₀ X)
@@ -218,9 +220,8 @@ eval {A} {B} = ntHelper(record
                 module x₁ = NaturalTransformation x₁
                 module x₂ = NaturalTransformation x₂
 
-{-
-β : ∀ {Γ A B} (f : Γ ·′ A ⇒ ⊤′ ·′ B) → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
-β f x = tt , {!!}
+-- β : ∀ {Γ A B} (f : Γ ·′ A ⇒ ⊤′ ·′ B) → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
+-- β = ?
 
 module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
 
@@ -259,7 +260,12 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
     { cartesian = CC
     ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {∥ A ∥} {∥ B ∥} f
     ; eval = λ {A} {B} → eval {∥ A ∥} {∥ B ∥}
-    ; β = λ {Γ} {A} {B} → β {Γ} {∥ A ∥} {∥ B ∥}
+    ; β = λ {Γ} {A} {B} f x →
+      cong (NaturalTransformation.η f _)
+        (Setoid.trans ( Functor.F₀ (Γ ·′ ∥ A ∥) _) ((Functor.identity Γ (Setoid.refl (Functor.F₀ Γ _)))
+                      , (Setoid.refl (Functor.F₀ ∥ A ∥ _))
+                      )
+                      x
+        )
     ; unique = {!!}
     }
--}
