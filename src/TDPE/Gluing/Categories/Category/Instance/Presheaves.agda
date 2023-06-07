@@ -16,7 +16,7 @@ open import Data.Unit.Polymorphic using (⊤; tt)
 open import Data.Product using (_,_; proj₁; proj₂)
 
 open import Categories.Functor using (Functor)
-open import Categories.NaturalTransformation using (NaturalTransformation)
+open import Categories.NaturalTransformation using (NaturalTransformation; ntHelper)
 open import Categories.Yoneda
 open import Categories.Category.Instance.Setoids using (Setoids)
 open import Categories.Category.Construction.Presheaves using (Presheaves)
@@ -106,67 +106,95 @@ fmap f = ↑ ∘ f ∘ ↓
   }
   where module A = Functor A
 
-module Y = Functor (Yoneda.embed 𝒞)
+module 𝕪 = Functor (Yoneda.embed 𝒞)
+
+Env : Obj → 𝒞.Obj → Obj
+Env P X = P ·′ 𝕪.₀ X
 
 _^′_ : Obj → Obj → Obj
 P ^′ Q = record
-  { F₀ = λ c → hom-setoid {A = P ·′ Y.₀ c} {B = Q}
+  { F₀ = λ X → hom-setoid {A = Env P X} {B = ⊤′ ·′ Q}
   ; F₁ = λ f → record
-    { _⟨$⟩_ = λ α → α ∘ ⟨ π , fmap (Y.₁ f) ∘ 𝓏 ⟩
+    { _⟨$⟩_ = λ α → α ∘ ⟨ π , fmap (𝕪.₁ f) ∘ 𝓏 ⟩
     ; cong = λ α≈β x≈y → α≈β (proj₁ x≈y , 𝒞.∘-resp-≈ʳ (proj₂ x≈y))
     }
-  ; identity = λ α≈β x≈y → α≈β (proj₁ x≈y , IsEquivalence.trans 𝒞.equiv 𝒞.identityˡ (proj₂ x≈y))
-  ; homomorphism = λ α≈β x≈y → α≈β (proj₁ x≈y , IsEquivalence.trans 𝒞.equiv (𝒞.∘-resp-≈ʳ (proj₂ x≈y)) 𝒞.assoc)
+  ; identity = λ α≈β x≈y → α≈β (proj₁ x≈y , 𝒞.Equiv.trans 𝒞.identityˡ (proj₂ x≈y))
+  ; homomorphism = λ α≈β x≈y → α≈β (proj₁ x≈y , 𝒞.Equiv.trans (𝒞.∘-resp-≈ʳ (proj₂ x≈y)) 𝒞.assoc)
   ; F-resp-≈ = λ f≈g α≈β x≈y → α≈β ((proj₁ x≈y) , (𝒞.∘-resp-≈ f≈g (proj₂ x≈y)))
   }
 
 Λ : ∀ {Γ A B} → Γ ·′ A ⇒ ⊤′ ·′ B → Γ ⇒ ⊤′ ·′ A ^′ B
-Λ {Γ} {A} {B} f = record
-  { η = λ X → S.↑ S.∘ Λ₀′ X
-  ; commute = {!!}
-  ; sym-commute = {!!}
-  }
+Λ {Γ} {A} {B} f = ↑ ∘ (ntHelper (record
+  { η = Λ₀′
+  ; commute = commute
+  }))
   where module Γ = Functor Γ
-        module B = Functor B
+        module A = Functor A
+        module B = Functor (⊤′ ·′ B)
+        module Γ·A = Functor (Γ ·′ A)
         module A^B = Functor (A ^′ B)
         module f = NaturalTransformation f
 
         e : ∀ X → Setoid.Carrier (Γ.₀ X)
-            → ∀ Y → Setoid.Carrier (Functor.₀ (A ·′ Y.₀ X) Y) → Setoid.Carrier (B.₀ Y)
-        e X θ Y (a , h) = proj₂ (f.η Y ⟨$⟩ (Γ.₁ h ⟨$⟩ θ , a))
+            → ∀ Y → Setoid.Carrier (Functor.₀ (Env A X) Y) → Setoid.Carrier (B.₀ Y)
+        e X θ Y (a , h) = f.η Y ⟨$⟩ (Γ.₁ h ⟨$⟩ θ , a)
 
         e′ : ∀ X → Setoid.Carrier (Γ.₀ X)
-             → ∀ Y → (Functor.₀ (A ·′ Y.₀ X) Y) S.⇒ B.₀ Y
+             → ∀ Y → (Functor.₀ (Env A X) Y) S.⇒ B.₀ Y
         e′ X θ Y = record
           { _⟨$⟩_ = e X θ Y
-          ; cong = λ x → proj₂ (cong (f.η Y) (Γ.F-resp-≈ (proj₂ x) refl , proj₁ x))
+          ; cong = λ x → cong (f.η Y) (Γ.F-resp-≈ (proj₂ x) refl , proj₁ x)
           }
           where open IsEquivalence (Setoid.isEquivalence (Γ.₀ X))
 
         Λ₀ : ∀ X → Setoid.Carrier (Γ.₀ X) → Setoid.Carrier (A^B.₀ X)
-        Λ₀ X θ = record
+        Λ₀ X θ = ntHelper (record
           { η = λ Y → e′ X θ Y
-          ; commute = λ f {x} {y} x≈y → {!!}
-          ; sym-commute = {!!}
-          }
+          ; commute = commute
+          })
+          where commute : ∀ {Y Z} (g : Y 𝒞.⇒ Z)
+                          → e′ X θ Y S.∘ Functor.₁ (Env A X) g S.≈ B.₁ g S.∘ e′ X θ Z
+                commute {Y} {Z} g {x₁ , y₁} {x₂ , y₂} (x₁≈x₂ , y₁≈y₂) = begin
+                    f.η Y ⟨$⟩ (Γ.₁ (Functor.₁ (𝕪.₀ X) g ⟨$⟩ y₁) ⟨$⟩ θ , A.₁ g ⟨$⟩ x₁)
+                  ≈⟨ cong (f.η Y) (Γ.F-resp-≈ 𝒞.identityˡ ΓEquiv.refl , AEquiv.refl) ⟩
+                    f.η Y ⟨$⟩ (Γ.₁ (y₁ 𝒞.∘ g) ⟨$⟩ θ , A.₁ g ⟨$⟩ x₁)
+                  ≈⟨ cong (f.η Y) (Γ.homomorphism ΓEquiv.refl , AEquiv.refl) ⟩
+                    f.η Y ⟨$⟩ (Γ·A.₁ g ⟨$⟩ (Γ.₁ y₁ ⟨$⟩ θ , x₁))
+                  ≈⟨ f.commute g (Γ.F-resp-≈ y₁≈y₂ ΓEquiv.refl , x₁≈x₂) ⟩
+                    B.₁ g ⟨$⟩ (f.η Z ⟨$⟩ (Γ.₁ y₂ ⟨$⟩ θ , x₂))
+                  ∎
+                  where open Reasoning (B.₀ Y)
+                        module ΓEquiv = IsEquivalence (Setoid.isEquivalence (Γ.₀ X))
+                        module AEquiv = IsEquivalence (Setoid.isEquivalence (A.₀ Y))
 
         Λ₀′ : ∀ X → Γ.₀ X S.⇒ A^B.₀ X
         Λ₀′ X = record
           { _⟨$⟩_ = Λ₀ X
-          ; cong = λ θ≈θ′ x≈y → proj₂ (cong (f.η _) (Γ.F-resp-≈ (proj₂ x≈y) θ≈θ′ , proj₁ x≈y))
+          ; cong = λ θ≈θ′ x≈y → cong (f.η _) (Γ.F-resp-≈ (proj₂ x≈y) θ≈θ′ , proj₁ x≈y)
           }
 
-eval : ∀ {A B} → ⊤′ ·′ (A ^′ B) ·′ A ⇒ ⊤′ ·′ B
-eval = record
-  { η = λ X → record
-    { _⟨$⟩_ = λ γ → tt , NaturalTransformation.η (proj₂ (proj₁ γ)) X ⟨$⟩ ((proj₂ γ) , 𝒞.id)
-    ; cong = λ γ≈δ → tt , proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ , IsEquivalence.refl 𝒞.equiv)
-    }
-  ; commute = {!!}
-  ; sym-commute = {!!}
-  }
+        commute : ∀ {Y Z} (g : Y 𝒞.⇒ Z) → Λ₀′ Y S.∘ Γ.₁ g S.≈ A^B.₁ g S.∘ Λ₀′ Z
+        commute {Y} {Z} g {θ} {θ′} θ≈θ′ {X} {x₁ , y₁} {x₂ , y₂} (x₁≈x₂ , y₁≈y₂) = begin
+            f.η X ⟨$⟩ ((Γ.₁ y₁ ⟨$⟩ (Γ.₁ g ⟨$⟩ θ)) , x₁)
+          ≈⟨ cong (f.η X) (Γ.F-resp-≈ y₁≈y₂ (Γ.F-resp-≈ 𝒞.Equiv.refl θ≈θ′) , AEquiv.refl) ⟩
+            f.η X ⟨$⟩ ((Γ.₁ y₂ ⟨$⟩ (Γ.₁ g ⟨$⟩ θ′)) , x₁)
+          ≈⟨ cong (f.η X) (ΓEquivX.sym (Γ.homomorphism ΓEquivZ.refl) , x₁≈x₂) ⟩
+            f.η X ⟨$⟩ (Γ.₁ (g 𝒞.∘ y₂) ⟨$⟩ θ′ , x₂)
+          ∎
+          where open Reasoning (B.₀ X)
+                module ΓEquivX = IsEquivalence (Setoid.isEquivalence (Γ.₀ X))
+                module ΓEquivZ = IsEquivalence (Setoid.isEquivalence (Γ.₀ Z))
+                module AEquiv = IsEquivalence (Setoid.isEquivalence (A.₀ X))
 
 {-
+eval : ∀ {A B} → ⊤′ ·′ (A ^′ B) ·′ A ⇒ ⊤′ ·′ B
+eval = ntHelper(record
+  { η = λ X → record
+    { _⟨$⟩_ = λ γ → NaturalTransformation.η (proj₂ (proj₁ γ)) X ⟨$⟩ ((proj₂ γ) , 𝒞.id)
+    ; cong = λ γ≈δ → proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ , IsEquivalence.refl 𝒞.equiv)
+    }
+  ; commute = {!!}
+  })
 
 β : ∀ {Γ A B} (f : Γ ·′ A ⇒ ⊤′ ·′ B) → eval ∘ ⟨ Λ f ∘ π , 𝓏 ⟩ ≈ f
 β f x = tt , {!!}
