@@ -2,7 +2,7 @@
 
 OTHEROPTS=
 
-RTSARGS = +RTS -M6G -A128M ${OTHEROPTS} -RTS
+RTSARGS = +RTS -M6G -H3.5G -A128M ${OTHEROPTS} -RTS
 
 test: Everything.agda
 	agda ${RTSARGS} -i. Everything.agda

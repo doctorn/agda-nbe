@@ -27,7 +27,7 @@ import TDPE.Gluing.Categories.Category.Instance.Setoids {ℓ} as S
 open import TDPE.Gluing.Categories.Category.ContextualCartesian (Psh)
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed (Psh)
 
-open Category Psh
+open Category Psh public
 module 𝒞 = Category 𝒞
 
 ⊤′ : Obj

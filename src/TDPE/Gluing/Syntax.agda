@@ -234,8 +234,8 @@ p-cong = C.induct C.is-equiv p λ x → C.unit (p-step x)
 open import TDPE.Gluing.Categories.Category.ContextualCartesian 𝕋𝕞
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed 𝕋𝕞
 
-𝕋𝕞-CC : ContextualCartesian 𝒰ᵀ
-𝕋𝕞-CC = record
+CC : ContextualCartesian 𝒰ᵀ
+CC = record
   { terminal = record
     { ⊤ = 𝟙
     ; ⊤-is-terminal = record
@@ -268,9 +268,9 @@ open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed 𝕋𝕞
           ∷-cong₂ (S.trans (S.sym p₁) project₁)
                   (C.trans (C.sym (project p₂)) v𝓏)
 
-𝕋𝕞-CCC : ContextualCartesianClosed 𝒰
-𝕋𝕞-CCC = record
-  { cartesian = 𝕋𝕞-CC
+CCC : ContextualCartesianClosed 𝒰
+CCC = record
+  { cartesian = CC
   ; Λ = λ t → ! ∷ Λ (𝒵 t)
   ; eval = eval
   ; β = β

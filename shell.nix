@@ -24,7 +24,7 @@ with pkgs;
             rev = "v0.1.7.1";
             sha256 = "1acb693ad2nrmnn6jxsyrlkc0di3kk2ksj2w9wnyfxrgvfsil7rn";
           };
-	}))
+        }))
       ]))
     ];
   }
