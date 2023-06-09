@@ -5,50 +5,38 @@ module TDPE.Gluing.Glue {a} (𝒰 : Set a) where
 open import Level
 open import Function.Equality
 
-open import Categories.Category using (Category)
-open import Categories.Functor using (Functor; _∘F_)
-open import Categories.NaturalTransformation using (ntHelper; NTHelper; NaturalTransformation)
-open import Categories.Category.Construction.Comma using (Comma; CommaObj; Comma⇒)
-open import Categories.Category.Construction.Presheaves using (Presheaves)
-open import Categories.Yoneda
-
-open import TDPE.Gluing.Categories.Functor.Properties using (precompose)
-open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧)
-import TDPE.Gluing.Syntax 𝒰 as Syntax
-
 open import Data.Product using (_,_; proj₁; proj₂)
 open import Data.Unit.Polymorphic using (⊤; tt)
 
 open import Relation.Binary using (IsEquivalence; Setoid)
 
-i : Functor 𝕎 Syntax.𝕋𝕞
-i = ⟦_⟧ Syntax.CC
+open import Categories.Category using (Category)
+open import Categories.Functor using (Functor; _∘F_)
+open import Categories.NaturalTransformation using (ntHelper; NTHelper; NaturalTransformation)
+open import Categories.Category.Construction.Comma using (Comma; CommaObj; Comma⇒)
+open import Categories.Yoneda
 
-Tm : Functor Syntax.𝕋𝕞 (Presheaves 𝕎)
-Tm = precompose (Functor.op i) ∘F Yoneda.embed Syntax.𝕋𝕞
-
-Gl : Category (suc a) a a
-Gl = Comma {A = Presheaves 𝕎} Categories.Functor.id Tm
+open import TDPE.Gluing.Categories.Functor.Properties using (precompose)
 
 open import TDPE.Gluing.Contexts 𝒰
+open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧)
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
+open import TDPE.Gluing.Representation 𝒰 using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣)
+import TDPE.Gluing.Syntax 𝒰 as Syn
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 
-𝔑𝔣₀ : 𝒰 → Psh.Obj
-𝔑𝔣₀ = {!!}
+Tm : Functor Syn.𝕋𝕞 Psh.Psh
+Tm = precompose (Functor.op (⟦_⟧ Syn.CC)) ∘F Yoneda.embed Syn.𝕋𝕞
+
+Gl : Category (suc a) a a
+Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 
 𝓡₀ : 𝒰ᵀ → Psh.Obj
-𝓡₀ A = ⟦ A ⟧ᵀ 𝔑𝔣₀ Psh._^′_
+𝓡₀ A = ⟦ A ⟧ᵀ (λ A₀ → 𝔑𝔣₀ ` A₀ `) Psh._^′_
 
 𝓡 : ℭ → Psh.Obj
-𝓡 Γ = ⟦ Γ ⟧ᶜ 𝔑𝔣₀ Psh._^′_ Psh.⊤′ Psh._·′_
-
-𝔑𝔣 : ℭ → Psh.Obj
-𝔑𝔣 = {!!}
-
-𝔑𝔢 : ℭ → Psh.Obj
-𝔑𝔢 = {!!}
+𝓡 Γ = ⟦ Γ ⟧ᶜ (λ A₀ → 𝔑𝔣₀ ` A₀ `) Psh._^′_ Psh.⊤′ Psh._·′_
 
 ↓ : ∀ Δ → 𝓡 Δ Psh.⇒ 𝔑𝔣 Δ
 ↓ = {!!}
@@ -76,19 +64,19 @@ CC = record
       ; β = 𝟙
       ; f = ntHelper (record
         { η = λ X → record
-          { _⟨$⟩_ = λ _ → Syntax.!
-          ; cong = λ _ → Syntax.!η
+          { _⟨$⟩_ = λ _ → Syn.!
+          ; cong = λ _ → Syn.!η
           }
-        ; commute = λ _ _ → Syntax.!η
+        ; commute = λ _ _ → Syn.!η
         })
       }
     ; ⊤-is-terminal = record
       { ! = record
         { g = Psh.!
-        ; h = Syntax.!
-        ; commute = λ _ → Syntax.!η
+        ; h = Syn.!
+        ; commute = λ _ → Syn.!η
         }
-      ; !-unique = λ f → Psh.!-unique (Comma⇒.g f) , Syntax.S.sym Syntax.!η
+      ; !-unique = λ f → Psh.!-unique (Comma⇒.g f) , Syn.S.sym Syn.!η
       }
     }
   ; _·_ = λ Γ A → record
@@ -98,28 +86,28 @@ CC = record
       { η = λ X → record
         { _⟨$⟩_ = λ x →
           (NaturalTransformation.η (CommaObj.f Γ) X ⟨$⟩ proj₁ x)
-            Syntax.∷ Syntax.𝒵 (NaturalTransformation.η (𝔮 (𝟙 · A)) X ⟨$⟩ (tt , proj₂ x))
+            Syn.∷ Syn.𝒵 (NaturalTransformation.η (𝔮 (𝟙 · A)) X ⟨$⟩ (tt , proj₂ x))
         ; cong = λ x≈y →
-          Syntax.∷-cong₂ (cong (NaturalTransformation.η (CommaObj.f Γ) X) (proj₁ x≈y))
-                         (Syntax.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
+          Syn.∷-cong₂ (cong (NaturalTransformation.η (CommaObj.f Γ) X) (proj₁ x≈y))
+                      (Syn.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
         }
       ; commute = λ f x → {!!}
       })
     }
   ; π = record
     { g = Psh.π
-    ; h = Syntax.π Syntax.id
+    ; h = Syn.π Syn.id
     ; commute = {!!}
     }
   ; 𝓏 = record
     { g = Psh.𝓏
-    ; h = Syntax.! Syntax.∷ Syntax.𝓏
+    ; h = Syn.! Syn.∷ Syn.𝓏
     ; commute = {!!}
     }
   ; extensions = record
     { ⟨_,_⟩ = λ γ a → record
       { g = Psh.⟨ Comma⇒.g γ , Comma⇒.g a ⟩
-      ; h = Comma⇒.h γ Syntax.∷ Syntax.𝒵 (Comma⇒.h a)
+      ; h = Comma⇒.h γ Syn.∷ Syn.𝒵 (Comma⇒.h a)
       ; commute = {!!}
       }
     ; project₁ = {!!}
@@ -127,3 +115,6 @@ CC = record
     ; unique = {!!}
     }
   }
+
+CCC : ContextualCartesianClosed Gl 𝒰
+CCC = {!!}
