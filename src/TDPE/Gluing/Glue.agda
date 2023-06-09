@@ -9,6 +9,7 @@ open import Data.Product using (_,_; proj₁; proj₂)
 open import Data.Unit.Polymorphic using (⊤; tt)
 
 open import Relation.Binary using (IsEquivalence; Setoid)
+import Relation.Binary.PropositionalEquality as PE
 
 open import Categories.Category using (Category)
 open import Categories.Functor using (Functor; _∘F_)
@@ -19,10 +20,10 @@ open import Categories.Yoneda
 open import TDPE.Gluing.Categories.Functor.Properties using (precompose)
 
 open import TDPE.Gluing.Contexts 𝒰
-open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧)
+open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧; ω₁; ω₂)
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
-open import TDPE.Gluing.Representation 𝒰 using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣)
+open import TDPE.Gluing.Representation 𝒰 as Repr using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣)
 import TDPE.Gluing.Syntax 𝒰 as Syn
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 
@@ -38,11 +39,39 @@ Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 𝓡 : ℭ → Psh.Obj
 𝓡 Γ = ⟦ Γ ⟧ᶜ (λ A₀ → 𝔑𝔣₀ ` A₀ `) Psh._^′_ Psh.⊤′ Psh._·′_
 
-↓ : ∀ Δ → 𝓡 Δ Psh.⇒ 𝔑𝔣 Δ
-↓ = {!!}
+↑₀ : ∀ A → 𝓡₀ A Psh.⇒ 𝔑𝔣₀ A
+↓₀ : ∀ A → 𝔑𝔢₀ A Psh.⇒ 𝓡₀ A
 
-↑ : ∀ Δ → 𝔑𝔢 Δ Psh.⇒ 𝓡 Δ
+↑₀ ` A `   = Psh.id
+↑₀ (A ⇒ B) = ntHelper (record
+  { η = λ Δ → record
+    { _⟨$⟩_ = λ x →
+      Repr.Λ (NaturalTransformation.η (↑₀ B) (Δ · A) ⟨$⟩
+        proj₂ (NaturalTransformation.η x (Δ · A) ⟨$⟩
+          (NaturalTransformation.η (↓₀ A) (Δ · A) ⟨$⟩ Repr.𝓋 Repr.𝓏  , ω₁ (Category.id 𝕎))))
+    ; cong = {!!}
+    }
+  ; commute = {!!}
+  })
+
+↓₀ ` A `   = ntHelper (record
+  { η = λ Δ → record { _⟨$⟩_ = Repr.ι ; cong = PE.cong Repr.ι }
+  ; commute = {!!}
+  })
+↓₀ (A ⇒ B) = ntHelper (record
+  { η = λ Δ → record
+    { _⟨$⟩_ = λ x → {!!}
+    ; cong = {!!}
+    }
+  ; commute = {!!}
+  })
+
+{-
+↑ : ∀ Δ → 𝓡 Δ Psh.⇒ 𝔑𝔣 Δ
 ↑ = {!!}
+
+↓ : ∀ Δ → 𝔑𝔢 Δ Psh.⇒ 𝓡 Δ
+↓ = {!!}
 
 𝔦 : ∀ Δ → 𝔑𝔣 Δ Psh.⇒ Functor.₀ Tm Δ
 𝔦 = {!!}
@@ -51,9 +80,9 @@ Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 𝔦′ = {!!}
 
 𝔮 : ∀ Δ → 𝓡 Δ Psh.⇒ Functor.₀ Tm Δ
-𝔮 Δ = 𝔦 Δ Psh.∘ ↓ Δ
+𝔮 Δ = 𝔦 Δ Psh.∘ ↑ Δ
 
-yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↓ Δ Psh.∘ ↑ Δ Psh.≈ 𝔦′ Δ
+yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
 yoga = {!!}
 
 CC : ContextualCartesian Gl 𝒰ᵀ
@@ -118,3 +147,4 @@ CC = record
 
 CCC : ContextualCartesianClosed Gl 𝒰
 CCC = {!!}
+-}
