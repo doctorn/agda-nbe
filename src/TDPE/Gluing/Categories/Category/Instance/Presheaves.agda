@@ -220,13 +220,9 @@ eval {A} {B} = ntHelper(record
                 module x₁ = NaturalTransformation x₁
                 module x₂ = NaturalTransformation x₂
 
-module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
+module _ {a} {𝒰 : Set a} (ι : 𝒰 → Obj) where
 
   open import TDPE.Gluing.Contexts 𝒰 renaming (_⇒_ to _^_)
-
-  ∥_∥ : 𝒰ᵀ → Obj
-  ∥ ` A ` ∥ = ∣ A ∣
-  ∥ A ^ B ∥ = ∥ A ∥ ^′ ∥ B ∥
 
   CC : ContextualCartesian 𝒰ᵀ
   CC = record
@@ -234,9 +230,9 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
       { ⊤ = ⊤′
       ; ⊤-is-terminal = record { ! = ! ; !-unique = !-unique }
       }
-    ; _·_ = λ Γ A → Γ ·′ ∥ A ∥
-    ; π = λ {Γ} {A} → π {Γ} {∥ A ∥}
-    ; 𝓏 = λ {Γ} {A} → 𝓏 {Γ} {∥ A ∥}
+    ; _·_ = λ Γ A → Γ ·′ (⟦ A ⟧ᵀ ι _^′_)
+    ; π = λ {Γ} {A} → π {Γ} {⟦ A ⟧ᵀ ι _^′_}
+    ; 𝓏 = λ {Γ} {A} → 𝓏 {Γ} {⟦ A ⟧ᵀ ι _^′_}
     ; extensions = record
       { ⟨_,_⟩ = λ {Δ} γ a → ⟨_,_⟩ {Δ = Δ} γ a
       ; project₁ = λ {Δ} {γ} {_} x → cong (NaturalTransformation.η γ _) x
@@ -255,16 +251,16 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
   CCC : ContextualCartesianClosed 𝒰
   CCC = record
     { cartesian = CC
-    ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {∥ A ∥} {∥ B ∥} f
-    ; eval = λ {A} {B} → eval {∥ A ∥} {∥ B ∥}
+    ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {⟦ A ⟧ᵀ ι _^′_} {⟦ B ⟧ᵀ ι _^′_} f
+    ; eval = λ {A} {B} → eval {⟦ A ⟧ᵀ ι _^′_} {⟦ B ⟧ᵀ ι _^′_}
     ; β = λ {Γ} {A} {B} f x →
       cong (NaturalTransformation.η f _)
-        (Setoid.trans ( Functor.F₀ (Γ ·′ ∥ A ∥) _) ((Functor.identity Γ (Setoid.refl (Functor.F₀ Γ _)))
-                      , (Setoid.refl (Functor.F₀ ∥ A ∥ _))
+        (Setoid.trans ( Functor.F₀ (Γ ·′ ⟦ A ⟧ᵀ ι _^′_) _) ((Functor.identity Γ (Setoid.refl (Functor.F₀ Γ _)))
+                      , (Setoid.refl (Functor.F₀ (⟦ A ⟧ᵀ ι _^′_) _))
                       )
                       x
         )
-    ; unique = λ {Γ} {A} {B} {g} {h} → unique {Γ} {∥ A ∥} {∥ B ∥} {g} {h}
+    ; unique = λ {Γ} {A} {B} {g} {h} → unique {Γ} {⟦ A ⟧ᵀ ι _^′_} {⟦ B ⟧ᵀ ι _^′_} {g} {h}
     }
     where unique : ∀ {Γ A B} {g : Γ ·′ A ⇒ ⊤′ ·′ B} {h : Γ ⇒ ⊤′ ·′ A ^′ B}
                    → eval ∘ ⟨ h ∘ π , 𝓏 ⟩ ≈ g

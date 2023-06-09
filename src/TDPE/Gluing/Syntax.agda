@@ -102,8 +102,8 @@ module _ {Δ Γ} where
 𝒵 : 𝔗𝔪 Δ (Γ · A) → 𝔗𝔪₀ Δ A
 𝒵 (_ ∷ a) = a
 
-project : {γ δ : 𝔗𝔪 Δ Γ} {a b : 𝔗𝔪₀ Δ A} → γ ∷ a S.≈ δ ∷ b → a C.≈ b
-project = S.induct C.is-equiv 𝒵 I
+𝒵-cong : ∀ {Δ Γ A} {γ δ : 𝔗𝔪 Δ (Γ · A)} → γ S.≈ δ → 𝒵 γ C.≈ 𝒵 δ
+𝒵-cong = S.induct C.is-equiv 𝒵 I
   where I : {γ δ : 𝔗𝔪 Δ (Γ · A)} → γ ↦ δ → 𝒵 γ C.≈ 𝒵 δ
         I (∷-stepₗ x) = C.refl
         I (∷-stepᵣ x) = C.unit x
@@ -266,7 +266,7 @@ CC = record
                  → π id ∘ δ S.≈ γ → ! ∷ 𝓏 [ δ ] S.≈ a → ⟨ γ , a ⟩ S.≈ δ
         unique {δ = δ ∷ b} {a = ! ∷ a} p₁ p₂ =
           ∷-cong₂ (S.trans (S.sym p₁) project₁)
-                  (C.trans (C.sym (project p₂)) v𝓏)
+                  (C.trans (C.sym (𝒵-cong p₂)) v𝓏)
 
 CCC : ContextualCartesianClosed 𝒰
 CCC = record
@@ -311,6 +311,6 @@ CCC = record
             Λ (h [ π id ] ⦅ 𝓏 ⦆)
           ≈⟨ C.sym(Λ-cong (C.trans sb-app (app-cong₂ (C.trans vp v𝓏) v𝓏))) ⟩
             Λ (p 𝓏 ⦅ 𝓏 ⦆ [ ! ∷ h [ π id ] ∷ 𝓏 ])
-          ≈⟨ Λ-cong (project x) ⟩
+          ≈⟨ Λ-cong (𝒵-cong x) ⟩
             Λ f
           ∎)

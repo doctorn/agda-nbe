@@ -89,13 +89,9 @@ eval = record
   ; cong = λ γ≈δ → tt , proj₂ (proj₁ γ≈δ) (proj₂ γ≈δ)
   }
 
-module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
+module _ {a} {𝒰 : Set a} (ι : 𝒰 → Obj) where
 
   open import TDPE.Gluing.Contexts 𝒰 renaming (_⇒_ to _^_)
-
-  ∥_∥ : 𝒰ᵀ → Obj
-  ∥ ` A ` ∥ = ∣ A ∣
-  ∥ A ^ B ∥ = ∥ A ∥ ^′ ∥ B ∥
 
   CC : ContextualCartesian 𝒰ᵀ
   CC = record
@@ -103,9 +99,9 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
       { ⊤ = ⊤′
       ; ⊤-is-terminal = record { ! = ! ; !-unique = !-unique }
       }
-    ; _·_ = λ Γ A → Γ ·′ ∥ A ∥
-    ; π = λ {Γ} {A} → π {Γ} {∥ A ∥}
-    ; 𝓏 = λ {Γ} {A} → 𝓏 {Γ} {∥ A ∥}
+    ; _·_ = λ Γ A → Γ ·′ (⟦ A ⟧ᵀ ι _^′_)
+    ; π = λ {Γ} {A} → π {Γ} {⟦ A ⟧ᵀ ι _^′_}
+    ; 𝓏 = λ {Γ} {A} → 𝓏 {Γ} {⟦ A ⟧ᵀ ι _^′_}
     ; extensions = record
       { ⟨_,_⟩ = λ {Δ} γ a → ⟨_,_⟩ {Δ = Δ} γ a
       ; project₁ = λ {_} {γ} x → cong γ x
@@ -124,8 +120,8 @@ module _ {a} (𝒰 : Set a) (∣_∣ : 𝒰 → Obj) where
   CCC : ContextualCartesianClosed 𝒰
   CCC = record
     { cartesian = CC
-    ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {∥ A ∥} {∥ B ∥} f
-    ; eval = λ {A} {B} → eval {∥ A ∥} {∥ B ∥}
+    ; Λ = λ {Γ} {A} {B} f → Λ {Γ} {⟦ A ⟧ᵀ ι _^′_} {⟦ B ⟧ᵀ ι _^′_} f
+    ; eval = λ {A} {B} → eval {⟦ A ⟧ᵀ ι _^′_} {⟦ B ⟧ᵀ ι _^′_}
     ; β = λ f x → cong f x
     ; unique = λ x y → tt , λ z → proj₂ (x (y , z))
     }
