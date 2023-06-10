@@ -23,7 +23,8 @@ open import TDPE.Gluing.Contexts 𝒰
 open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧; ω₁; ω₂)
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
-open import TDPE.Gluing.Representation 𝒰 as Repr using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣)
+open import TDPE.Gluing.Representation 𝒰 as Repr
+  using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣; 𝓋; 𝓏; π; ι; Λ; _⦅_⦆)
 import TDPE.Gluing.Syntax 𝒰 as Syn
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 
@@ -39,34 +40,45 @@ Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 𝓡 : ℭ → Psh.Obj
 𝓡 Γ = ⟦ Γ ⟧ᶜ (λ A₀ → 𝔑𝔣₀ ` A₀ `) Psh._^′_ Psh.⊤′ Psh._·′_
 
+-- TODO(@doctorn) probably remove this
+∣_⦅_⦆∣ : Psh.Obj → ℭ → Set _
+∣ P ⦅ Γ ⦆∣ = Setoid.Carrier (Functor.₀ P Γ)
+
+↑₀-η : ∀ A Δ → ∣ 𝓡₀ A ⦅ Δ ⦆∣ → ∣ 𝔑𝔣₀ A ⦅ Δ ⦆∣
+↓₀-η : ∀ A Δ → ∣ 𝔑𝔢₀ A ⦅ Δ ⦆∣ → ∣ 𝓡₀ A ⦅ Δ ⦆∣
+
+↑₀-η ` A `   Δ x = x
+↑₀-η (A ⇒ B) Δ x =
+  Λ (↑₀-η B (Δ · A) (proj₂ (x.η (Δ · A) ⟨$⟩ (↓₀-η A (Δ · A) (𝓋 𝓏) , ω₁ (Category.id 𝕎)))))
+  where module x = NaturalTransformation x
+
+↓₀-η ` A `   Δ x = ι x
+↓₀-η (A ⇒ B) Δ x = ntHelper (record
+  { η = λ Γ → record
+    { _⟨$⟩_ = λ e → tt , ↓₀-η B Γ (Repr.+′ (proj₂ e) x ⦅ ↑₀-η A Γ (proj₁ e) ⦆)
+    ; cong = {!!}
+    }
+  ; commute = {!!}
+  })
+
 ↑₀ : ∀ A → 𝓡₀ A Psh.⇒ 𝔑𝔣₀ A
+↑₀ A = ntHelper (record
+  { η = λ Δ → record
+    { _⟨$⟩_ = ↑₀-η A Δ
+    ; cong = {!!}
+    }
+  ; commute = {!!}
+  })
+
 ↓₀ : ∀ A → 𝔑𝔢₀ A Psh.⇒ 𝓡₀ A
-
-↑₀ ` A `   = Psh.id
-↑₀ (A ⇒ B) = ntHelper (record
+↓₀ A = ntHelper (record
   { η = λ Δ → record
-    { _⟨$⟩_ = λ x →
-      Repr.Λ (NaturalTransformation.η (↑₀ B) (Δ · A) ⟨$⟩
-        proj₂ (NaturalTransformation.η x (Δ · A) ⟨$⟩
-          (NaturalTransformation.η (↓₀ A) (Δ · A) ⟨$⟩ Repr.𝓋 Repr.𝓏  , ω₁ (Category.id 𝕎))))
+    { _⟨$⟩_ = ↓₀-η A Δ
     ; cong = {!!}
     }
   ; commute = {!!}
   })
 
-↓₀ ` A `   = ntHelper (record
-  { η = λ Δ → record { _⟨$⟩_ = Repr.ι ; cong = PE.cong Repr.ι }
-  ; commute = {!!}
-  })
-↓₀ (A ⇒ B) = ntHelper (record
-  { η = λ Δ → record
-    { _⟨$⟩_ = λ x → {!!}
-    ; cong = {!!}
-    }
-  ; commute = {!!}
-  })
-
-{-
 ↑ : ∀ Δ → 𝓡 Δ Psh.⇒ 𝔑𝔣 Δ
 ↑ = {!!}
 
@@ -85,6 +97,7 @@ Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
 yoga = {!!}
 
+{-
 CC : ContextualCartesian Gl 𝒰ᵀ
 CC = record
   { terminal = record
