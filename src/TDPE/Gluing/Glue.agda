@@ -40,32 +40,52 @@ Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 𝓡 : ℭ → Psh.Obj
 𝓡 Γ = ⟦ Γ ⟧ᶜ (λ A₀ → 𝔑𝔣₀ ` A₀ `) Psh._^′_ Psh.⊤′ Psh._·′_
 
--- TODO(@doctorn) probably remove this
-∣_⦅_⦆∣ : Psh.Obj → ℭ → Set _
-∣ P ⦅ Γ ⦆∣ = Setoid.Carrier (Functor.₀ P Γ)
+module _ (A : 𝒰ᵀ) where module 𝔑𝔣₀ = Functor (𝔑𝔣₀ A)
+module _ (A : 𝒰ᵀ) where module 𝔑𝔢₀ = Functor (𝔑𝔢₀ A)
+module _ (A : 𝒰ᵀ) where module 𝓡₀ = Functor (𝓡₀ A)
+module _ (Γ : ℭ) where module 𝔑𝔣 = Functor (𝔑𝔣 Γ)
+module _ (Γ : ℭ) where module 𝔑𝔢 = Functor (𝔑𝔢 Γ)
+module _ (Γ : ℭ) where module 𝓡 = Functor (𝓡 Γ)
 
-↑₀-η : ∀ A Δ → ∣ 𝓡₀ A ⦅ Δ ⦆∣ → ∣ 𝔑𝔣₀ A ⦅ Δ ⦆∣
-↓₀-η : ∀ A Δ → ∣ 𝔑𝔢₀ A ⦅ Δ ⦆∣ → ∣ 𝓡₀ A ⦅ Δ ⦆∣
+private
+  ↑₀-η : ∀ A Δ → Setoid.Carrier (𝓡₀.₀ A Δ) → Setoid.Carrier (𝔑𝔣₀.₀ A Δ)
+  ↓₀-η : ∀ A Δ → Setoid.Carrier (𝔑𝔢₀.₀ A Δ) → Setoid.Carrier (𝓡₀.₀ A Δ)
 
-↑₀-η ` A `   Δ x = x
-↑₀-η (A ⇒ B) Δ x =
-  Λ (↑₀-η B (Δ · A) (proj₂ (x.η (Δ · A) ⟨$⟩ (↓₀-η A (Δ · A) (𝓋 𝓏) , ω₁ (Category.id 𝕎)))))
-  where module x = NaturalTransformation x
+  ↑₀-cong : ∀ A Δ {x y : Setoid.Carrier (𝓡₀.₀ A Δ)}
+            → Setoid._≈_ (𝓡₀.₀ A Δ) x y
+            → Setoid._≈_ (𝔑𝔣₀.₀ A Δ) (↑₀-η A Δ x) (↑₀-η A Δ y)
+  ↓₀-cong : ∀ A Δ {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Δ)}
+            → Setoid._≈_ (𝔑𝔢₀.₀ A Δ) x y
+            → Setoid._≈_ (𝓡₀.₀ A Δ) (↓₀-η A Δ x) (↓₀-η A Δ y)
 
-↓₀-η ` A `   Δ x = ι x
-↓₀-η (A ⇒ B) Δ x = ntHelper (record
-  { η = λ Γ → record
-    { _⟨$⟩_ = λ e → tt , ↓₀-η B Γ (Repr.+′ (proj₂ e) x ⦅ ↑₀-η A Γ (proj₁ e) ⦆)
-    ; cong = {!!}
-    }
-  ; commute = {!!}
-  })
+  ↑₀-η ` A `   Δ x = x
+  ↑₀-η (A ⇒ B) Δ x =
+    Λ (↑₀-η B (Δ · A) (proj₂ (x.η (Δ · A) ⟨$⟩ (↓₀-η A (Δ · A) (𝓋 𝓏) , ω₁ (Category.id 𝕎)))))
+    where module x = NaturalTransformation x
+
+  ↑₀-cong ` A `   Δ x = x
+  ↑₀-cong (A ⇒ B) Δ x =
+    PE.cong Λ (↑₀-cong B (Δ · A) (proj₂ (x (↓₀-cong A (Δ · A) PE.refl , PE.refl))))
+
+  ↓₀-η ` A `   Δ x = ι x
+  ↓₀-η (A ⇒ B) Δ x = ntHelper (record
+    { η = λ Γ → record
+      { _⟨$⟩_ = λ e → tt , ↓₀-η B Γ (Repr.+′ (proj₂ e) x ⦅ ↑₀-η A Γ (proj₁ e) ⦆)
+      ; cong = λ e → tt , ↓₀-cong B Γ
+        (PE.cong₂ _⦅_⦆ (PE.cong₂ Repr.+′ (proj₂ e) PE.refl) (↑₀-cong A Γ (proj₁ e)))
+      }
+    ; commute = λ f x → tt , {!!}
+    })
+
+  ↓₀-cong ` A `   Δ x = PE.cong ι x
+  ↓₀-cong (A ⇒ B) Δ x {Γ} (y , w) =
+    tt , ↓₀-cong B Γ (PE.cong₂ _⦅_⦆ (PE.cong₂ Repr.+′ w x) (↑₀-cong A Γ y))
 
 ↑₀ : ∀ A → 𝓡₀ A Psh.⇒ 𝔑𝔣₀ A
 ↑₀ A = ntHelper (record
   { η = λ Δ → record
     { _⟨$⟩_ = ↑₀-η A Δ
-    ; cong = {!!}
+    ; cong = ↑₀-cong A Δ
     }
   ; commute = {!!}
   })
@@ -74,16 +94,30 @@ Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 ↓₀ A = ntHelper (record
   { η = λ Δ → record
     { _⟨$⟩_ = ↓₀-η A Δ
-    ; cong = {!!}
+    ; cong = ↓₀-cong A Δ
     }
   ; commute = {!!}
   })
 
 ↑ : ∀ Δ → 𝓡 Δ Psh.⇒ 𝔑𝔣 Δ
-↑ = {!!}
+↑ 𝟙 = ntHelper (record
+  { η = λ Γ → record
+    { _⟨$⟩_ = λ _ → Repr.!
+    ; cong = λ _ → Repr.!
+    }
+  ; commute = λ _ _ → Repr.!
+  })
+↑ (Δ · A) = ntHelper (record
+  { η = λ Γ → record
+    { _⟨$⟩_ = λ x → (NaturalTransformation.η (↑ Δ) Γ ⟨$⟩ proj₁ x) Repr.∷ ↑₀-η A Γ (proj₂ x)
+    ; cong = λ x → cong (NaturalTransformation.η (↑ Δ) Γ) (proj₁ x) Repr.∷ ↑₀-cong A Γ (proj₂ x)
+    }
+  ; commute = {!!}
+  })
 
 ↓ : ∀ Δ → 𝔑𝔢 Δ Psh.⇒ 𝓡 Δ
-↓ = {!!}
+↓ 𝟙       = Psh.!
+↓ (Δ · A) = Psh.⟨ ↓ Δ Psh.∘ Repr.proj 𝔑𝔢₀ , Psh.↑ Psh.∘ ↓₀ A Psh.∘ Repr.zero′ 𝔑𝔢₀ ⟩
 
 𝔦 : ∀ Δ → 𝔑𝔣 Δ Psh.⇒ Functor.₀ Tm Δ
 𝔦 = {!!}
@@ -97,7 +131,6 @@ Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
 yoga = {!!}
 
-{-
 CC : ContextualCartesian Gl 𝒰ᵀ
 CC = record
   { terminal = record
@@ -160,4 +193,3 @@ CC = record
 
 CCC : ContextualCartesianClosed Gl 𝒰
 CCC = {!!}
--}

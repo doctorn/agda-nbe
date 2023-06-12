@@ -9,6 +9,7 @@ open import Relation.Binary.PropositionalEquality as PE using (_≡_)
 
 open import Categories.Category using (Category)
 open import Categories.Functor using (Functor)
+open import Categories.NaturalTransformation using (NaturalTransformation; ntHelper)
 
 open import TDPE.Gluing.Contexts 𝒰
 open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; 𝒲; ω₁; ω₂; ϵ₀)
@@ -166,6 +167,45 @@ module _ (𝒪 : 𝒰ᵀ → Psh.Obj) where
       trans (ext-cong x≈y)
             (IsEquivalence.reflexive isEquivalence (PE.cong₂ ext f≈g PE.refl))
     }
+
+  proj : ∀ {Δ A} → ⟨_⟩ (Δ · A) Psh.⇒ ⟨_⟩ Δ
+  proj = ntHelper (record
+    { η = λ Γ → record
+      { _⟨$⟩_ = λ { (γ ∷ _) → γ }
+      ; cong = λ { (γ ∷ _) → γ }
+      }
+    ; commute = λ f → λ { (γ ∷ _) → ext-cong γ }
+    })
+
+  zero : ∀ {Δ A} → ⟨_⟩ (Δ · A) Psh.⇒ ⟨_⟩ (𝟙 · A)
+  zero = ntHelper (record
+    { η = λ Γ → record
+      { _⟨$⟩_ = λ { (_ ∷ a) → ! ∷ a }
+      ; cong = λ { (_ ∷ a) → ! ∷ a }
+      }
+    ; commute = λ f → λ { (_ ∷ a) → ! ∷ cong (Functor.₁ (𝒪 _) f) a }
+    })
+
+  unit : ∀ {A} → 𝒪 A Psh.⇒ ⟨_⟩ (𝟙 · A)
+  unit = ntHelper (record
+    { η = λ Γ → record
+      { _⟨$⟩_ = λ x → ! ∷ x
+      ; cong = λ x → ! ∷ x
+      }
+    ; commute = λ f x → ! ∷ (cong (Functor.₁ (𝒪 _) f) x)
+    })
+
+  counit : ∀ {A} → ⟨_⟩ (𝟙 · A) Psh.⇒ 𝒪 A
+  counit = ntHelper (record
+    { η = λ Γ → record
+      { _⟨$⟩_ = λ { (! ∷ x) → x }
+      ; cong = λ { (! ∷ x) → x }
+      }
+    ; commute = λ { f (! ∷ x) → cong (Functor.₁ (𝒪 _) f) x }
+    })
+
+  zero′ : ∀ {Δ A} → ⟨_⟩ (Δ · A) Psh.⇒ 𝒪 A
+  zero′ = counit Psh.∘ zero
 
 𝔑𝔣 : ℭ → Psh.Obj
 𝔑𝔣 = ⟨ 𝔑𝔣₀ ⟩
