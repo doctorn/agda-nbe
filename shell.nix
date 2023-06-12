@@ -2,7 +2,7 @@
 
 with pkgs;
   mkShell {
-    name = "agda-catex";
+    name = "agda-tdpe";
 
     nativeBuildInputs = [
       git
