@@ -9,8 +9,8 @@ open import Data.Product using (_,_; proj₁; proj₂)
 open import Data.Unit.Polymorphic using (⊤; tt)
 
 open import Relation.Binary using (IsEquivalence; Setoid)
+open import Relation.Binary.PropositionalEquality as PE using (_≡_)
 import Relation.Binary.Reasoning.Setoid as Reasoning
-import Relation.Binary.PropositionalEquality as PE
 
 open import Categories.Category using (Category; _[_,_])
 open import Categories.Functor using (Functor; _∘F_)
@@ -31,6 +31,8 @@ import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 
 Tm : Functor Syn.𝕋𝕞 Psh.Psh
 Tm = precompose (Functor.op (⟦_⟧ Syn.CC)) ∘F Yoneda.embed Syn.𝕋𝕞
+
+module Tm = Functor Tm
 
 Gl : Category (suc a) a a
 Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
@@ -99,7 +101,7 @@ private
           module x₁ = NaturalTransformation x₁
           module x₂ = NaturalTransformation x₂
 
-          I : w 𝕎.∘ 𝕎.id PE.≡ 𝕎.id 𝕎.∘ (𝕎.id 𝕎.∘ w)
+          I : w 𝕎.∘ 𝕎.id ≡ 𝕎.id 𝕎.∘ (𝕎.id 𝕎.∘ w)
           I = begin
               w 𝕎.∘ 𝕎.id
             ≡⟨ 𝕎.identityʳ ⟩
@@ -180,19 +182,109 @@ private
 ↓ 𝟙       = Psh.!
 ↓ (Δ · A) = Psh.⟨ ↓ Δ Psh.∘ Repr.proj 𝔑𝔢₀ , Psh.↑ Psh.∘ ↓₀ A Psh.∘ Repr.zero′ 𝔑𝔢₀ ⟩
 
-{-
-𝔦 : ∀ Δ → 𝔑𝔣 Δ Psh.⇒ Functor.₀ Tm Δ
-𝔦 = {!!}
+private
+
+  𝔦₀-η : ∀ A Γ → Setoid.Carrier (𝔑𝔣₀.₀ A Γ) → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
+  𝔦₀′-η : ∀ A Γ → Setoid.Carrier (𝔑𝔢₀.₀ A Γ) → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
+
+  𝔦₀-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)} → x ≡ y → 𝔦₀-η A Γ x Syn.S.≈ 𝔦₀-η A Γ y
+  𝔦₀′-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)} → x ≡ y → 𝔦₀′-η A Γ x Syn.S.≈ 𝔦₀′-η A Γ y
+
+  𝔦₀-η _       Γ (ι x) = 𝔦₀′-η _ Γ x
+  𝔦₀-η (A ⇒ B) Γ (Λ x) = Syn.! Syn.∷ Syn.Λ (Syn.𝒵 (𝔦₀-η B (Γ · A) x))
+
+  𝔦₀′-η A Γ (𝓋 x)     = v x
+    where v : ∀ {Γ A} → Repr.var Γ A → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
+          v 𝓏     = Syn.! Syn.∷ Syn.𝓏
+          v (π x) = Syn.! Syn.∷ Syn.p (Syn.𝒵 (v x))
+  𝔦₀′-η A Γ (f ⦅ x ⦆) = Syn.! Syn.∷ Syn.𝒵 (𝔦₀′-η _ Γ f) Syn.⦅ Syn.𝒵 (𝔦₀-η _ Γ x) ⦆
+
+  -- NOTE(@doctorn) these proofs could just be done with `Setoid.reflexive`, but I wanted to future proof
+  -- them a bit for partial evaluation
+  𝔦₀-cong _       Γ {ι x} PE.refl = 𝔦₀′-cong _ Γ {x} PE.refl
+  𝔦₀-cong (A ⇒ B) Γ {Λ x} PE.refl = Syn.∷-congᵣ (Syn.Λ-cong (Syn.𝒵-cong (𝔦₀-cong B (Γ · A) {x} PE.refl)))
+
+  𝔦₀′-cong A Γ {𝓋 x}    PE.refl = Setoid.reflexive (Functor.₀ (Tm.₀ (𝟙 · A)) Γ) PE.refl
+  𝔦₀′-cong A Γ {f ⦅ x ⦆} PE.refl =
+    Syn.∷-congᵣ (Syn.app-cong₂ (Syn.𝒵-cong (𝔦₀′-cong _ Γ {f} PE.refl))
+      (Syn.𝒵-cong (𝔦₀-cong _ Γ {x} PE.refl)))
+
+  𝔦₀ : ∀ A → 𝔑𝔣₀ A Psh.⇒ Tm.₀ (𝟙 · A)
+  𝔦₀ A = ntHelper (record
+    { η = λ Γ → record { _⟨$⟩_ = 𝔦₀-η A Γ ; cong = 𝔦₀-cong A Γ }
+    ; commute = {!!}
+    })
+
+  𝔦₀′ : ∀ A → 𝔑𝔢₀ A Psh.⇒ Tm.₀ (𝟙 · A)
+  𝔦₀′ A = ntHelper (record
+    { η = λ Γ → record { _⟨$⟩_ = 𝔦₀′-η A Γ ; cong = 𝔦₀′-cong A Γ }
+    ; commute = {!!}
+    })
+
+𝔦 : ∀ Δ → 𝔑𝔣 Δ Psh.⇒ Tm.₀ Δ
+𝔦 𝟙       = ntHelper (record
+  { η = λ Γ → record { _⟨$⟩_ = λ _ → Syn.! ; cong = λ _ → Syn.!η }
+  ; commute = λ _ _ → Syn.!η
+  })
+𝔦 (Δ · A) = ntHelper (record
+  { η = λ Γ → record
+    { _⟨$⟩_ = λ { (γ Repr.∷ a) → (𝔦Δ.η Γ ⟨$⟩ γ) Syn.∷ Syn.𝒵 (𝔦₀A.η Γ ⟨$⟩ a) }
+    ; cong = λ { (γ Repr.∷ a) → Syn.∷-cong₂ (cong (𝔦Δ.η Γ) γ) (Syn.𝒵-cong (cong (𝔦₀A.η Γ) a)) }
+    }
+  ; commute = {!!}
+  })
+  where module 𝔦Δ = NaturalTransformation (𝔦 Δ)
+        module 𝔦₀A = NaturalTransformation (𝔦₀ A)
 
 𝔦′ : ∀ Δ → 𝔑𝔢 Δ Psh.⇒ Functor.₀ Tm Δ
-𝔦′ = {!!}
+𝔦′ 𝟙       = ntHelper (record
+  { η = λ Γ → record { _⟨$⟩_ = λ _ → Syn.! ; cong = λ x → Syn.!η }
+  ; commute = λ _ _ → Syn.!η
+  })
+𝔦′ (Δ · A) = ntHelper (record
+  { η = λ Γ → record
+    { _⟨$⟩_ = λ { (γ Repr.∷ a) → (𝔦′Δ.η Γ ⟨$⟩ γ) Syn.∷ Syn.𝒵 (𝔦₀′A.η Γ ⟨$⟩ a) }
+    ; cong = λ { (γ Repr.∷ a) → Syn.∷-cong₂ (cong (𝔦′Δ.η Γ) γ) (Syn.𝒵-cong (cong (𝔦₀′A.η Γ) a)) }
+    }
+  ; commute = {!!}
+  })
+  where module 𝔦′Δ = NaturalTransformation (𝔦′ Δ)
+        module 𝔦₀′A = NaturalTransformation (𝔦₀′ A)
 
 𝔮 : ∀ Δ → 𝓡 Δ Psh.⇒ Functor.₀ Tm Δ
 𝔮 Δ = 𝔦 Δ Psh.∘ ↑ Δ
 
-yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
-yoga = {!!}
+yoga₀ : ∀ {A} → 𝔦₀ A Psh.∘ ↑₀ A Psh.∘ ↓₀ A Psh.≈ 𝔦₀′ A
+yoga₀ {A = ` A `} PE.refl = Syn.S.refl
+yoga₀ {A = A ⇒ B} {Γ} {x} {_} PE.refl =
+  Syn.S.trans
+    (Syn.∷-congᵣ (Syn.Λ-cong I))
+    (Syn.S.sym (ContextualCartesianClosed.η Syn.CCC (𝔦₀′-η (A ⇒ B) Γ x)))
+  where open Reasoning Syn.C.setoid
 
+        I = begin
+            Syn.𝒵 (𝔦₀-η B (Γ · A) (↑₀-η B (Γ · A) (↓₀-η B (Γ · A) (Repr.+′ (ω₁ (𝕎.id)) x ⦅ ↑₀-η A (Γ · A) (↓₀-η A (Γ · A) (𝓋 𝓏)) ⦆))))
+          ≈⟨ Syn.𝒵-cong (yoga₀ PE.refl) ⟩
+            Syn.𝒵 (𝔦₀′-η B (Γ · A) (Repr.+′ (ω₁ (𝕎.id)) x ⦅ ↑₀-η A (Γ · A) (↓₀-η A (Γ · A) (𝓋 𝓏)) ⦆))
+          ≈⟨ Syn.app-congᵣ (Syn.𝒵-cong (yoga₀ PE.refl)) ⟩
+            Syn.𝒵 (𝔦₀′-η (A ⇒ B) (Γ · A) (Repr.+′ (ω₁ 𝕎.id) x)) Syn.⦅ Syn.𝓏 ⦆
+          ≈⟨ Syn.app-congₗ (Syn.𝒵-cong (NaturalTransformation.commute (𝔦₀′ (A ⇒ B)) (ω₁ (𝕎.id {Γ})) {x = x} PE.refl)) ⟩
+            Syn.𝓏 Syn.[ 𝔦₀′-η (A ⇒ B) Γ x Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) (𝕎.id {Γ}) Syn.∘ ContextualCartesian.π Syn.CC) ] Syn.⦅ Syn.𝓏 ⦆
+          ≈⟨ Syn.app-congₗ (Syn.sb-congᵣ (Syn.∘-congᵣ (Syn.∘-congₗ (Functor.identity (⟦_⟧ Syn.CC) {Γ})))) ⟩
+            Syn.𝓏 Syn.[ 𝔦₀′-η (A ⇒ B) Γ x Syn.∘ (Syn.id Syn.∘ ContextualCartesian.π Syn.CC) ] Syn.⦅ Syn.𝓏 ⦆
+          ≈⟨ Syn.app-congₗ (Syn.sb-congᵣ (Syn.∘-congᵣ Syn.∘-identityˡ)) ⟩
+            Syn.𝓏 Syn.[ 𝔦₀′-η (A ⇒ B) Γ x Syn.∘ Syn.π Syn.id ] Syn.⦅ Syn.𝓏 ⦆
+          ≈⟨ Syn.C.sym (Syn.app-cong₂ Syn.vp Syn.v𝓏) ⟩
+            (Syn.p Syn.𝓏 Syn.[ _ Syn.∷ Syn.𝓏 ]) Syn.⦅ Syn.𝓏 Syn.[ _ Syn.∷ Syn.𝓏 ] ⦆
+          ≈⟨ Syn.C.sym Syn.sb-app ⟩
+            (Syn.p Syn.𝓏 Syn.⦅ Syn.𝓏 ⦆) Syn.[ _ Syn.∷ Syn.𝓏 ]
+          ∎
+
+yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
+yoga {Δ = 𝟙}     Repr.!       = Syn.!η
+yoga {Δ = Δ · A} (γ Repr.∷ a) = Syn.∷-cong₂ (yoga γ) (Syn.𝒵-cong (yoga₀ a))
+
+{-
 CC : ContextualCartesian Gl 𝒰ᵀ
 CC = record
   { terminal = record
