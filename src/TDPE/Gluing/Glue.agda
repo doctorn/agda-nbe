@@ -190,6 +190,11 @@ private
   𝔦₀-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)} → x ≡ y → 𝔦₀-η A Γ x Syn.S.≈ 𝔦₀-η A Γ y
   𝔦₀′-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)} → x ≡ y → 𝔦₀′-η A Γ x Syn.S.≈ 𝔦₀′-η A Γ y
 
+  𝔦₀-commute : ∀ A {Γ Δ} (f : 𝕎 [ Δ , Γ ]) {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)}
+               → x ≡ y → 𝔦₀-η A Δ (Repr.+ f x) Syn.S.≈ Syn.! Syn.∷ Syn.𝓏 Syn.[ 𝔦₀-η A Γ y Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f) ]
+  𝔦₀′-commute : ∀ A {Γ Δ} (f : 𝕎 [ Δ , Γ ]) {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)}
+               → x ≡ y → 𝔦₀′-η A Δ (Repr.+′ f x) Syn.S.≈ Syn.! Syn.∷ Syn.𝓏 Syn.[ 𝔦₀′-η A Γ y Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f) ]
+
   𝔦₀-η _       Γ (ι x) = 𝔦₀′-η _ Γ x
   𝔦₀-η (A ⇒ B) Γ (Λ x) = Syn.! Syn.∷ Syn.Λ (Syn.𝒵 (𝔦₀-η B (Γ · A) x))
 
@@ -209,16 +214,55 @@ private
     Syn.∷-congᵣ (Syn.app-cong₂ (Syn.𝒵-cong (𝔦₀′-cong _ Γ {f} PE.refl))
       (Syn.𝒵-cong (𝔦₀-cong _ Γ {x} PE.refl)))
 
+  𝔦₀-commute _       f {x = ι x} PE.refl = 𝔦₀′-commute _ f {x} PE.refl
+  𝔦₀-commute (A ⇒ B) f {x = Λ x} PE.refl = Syn.∷-congᵣ (begin
+      Syn.Λ (Syn.𝒵 (𝔦₀-η B _ (Repr.+ (ω₂ f) x)))
+    ≈⟨ Syn.Λ-cong (Syn.𝒵-cong (𝔦₀-commute B (ω₂ f) {x} PE.refl)) ⟩
+      Syn.Λ (Syn.𝓏 Syn.[ 𝔦₀-η B _ x Syn.∘ _ ])
+    ≈⟨ Syn.Λ-cong Syn.v𝒵 ⟩
+      Syn.Λ (Syn.𝒵 (𝔦₀-η B _ x Syn.∘ _))
+    ≈⟨ Syn.Λ-cong (Syn.C.sym (Syn.sb-comp {γ = 𝔦₀-η B _ x})) ⟩
+      Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x) Syn.[ _ ])
+    ≈⟨ Syn.Λ-cong (Syn.sb-congᵣ (Syn.∷-congₗ (Syn.S.trans (Syn.S.sym Syn.πβ) Syn.∘-identityʳ))) ⟩
+      Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x) Syn.[ _ ])
+    ≈⟨ Syn.C.sym Syn.sb-lam ⟩
+      Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x)) Syn.[ _ ]
+    ≈⟨ Syn.C.sym Syn.v𝓏 ⟩
+      Syn.𝓏 Syn.[ (Syn.! Syn.∷ Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x))) Syn.∘ _ ]
+    ∎)
+    where open Reasoning Syn.C.setoid
+
+  𝔦₀′-commute A f {𝓋 x} PE.refl =
+    Syn.S.trans (Syn.S.trans (I f x) (Syn.S.sym Syn.𝒵η)) (Syn.∷-congᵣ (Syn.C.sym Syn.v𝒵))
+    where I : ∀ {Γ Δ} (f : 𝕎 [ Δ , Γ ]) (x : Repr.var Γ A)
+              → 𝔦₀′-η _ _ (𝓋 (Repr.+var f x)) Syn.S.≈ 𝔦₀′-η _ _ (𝓋 x) Syn.∘ Functor.₁ (⟦_⟧ Syn.CC) f
+          I f 𝓏     = {!!}
+          I f (π x) = {!!}
+  𝔦₀′-commute A f {t ⦅ x ⦆} PE.refl = Syn.∷-congᵣ (begin
+      Syn.𝒵 (𝔦₀′-η _ _ (Repr.+′ f t)) Syn.⦅ Syn.𝒵 (𝔦₀-η _ _ (Repr.+ f x)) ⦆
+    ≈⟨ Syn.app-cong₂ (Syn.𝒵-cong (𝔦₀′-commute _ f {t} PE.refl)) (Syn.𝒵-cong (𝔦₀-commute _ f {x} PE.refl)) ⟩
+      Syn.𝓏 Syn.[ _ ] Syn.⦅ Syn.𝓏 Syn.[ _ ] ⦆
+    ≈⟨ Syn.app-cong₂ Syn.v𝒵 Syn.v𝒵 ⟩
+      _ Syn.⦅ _ ⦆
+    ≈⟨ Syn.C.sym (Syn.app-cong₂ (Syn.sb-comp {γ = 𝔦₀′-η _ _ t}) (Syn.sb-comp {γ = 𝔦₀-η _ _ x})) ⟩
+      _ Syn.⦅ _ ⦆
+    ≈⟨ Syn.C.sym Syn.sb-app ⟩
+      (Syn.𝒵 (𝔦₀′-η _ _ t) Syn.⦅ Syn.𝒵 (𝔦₀-η _ _ x) ⦆) Syn.[ _ ]
+    ≈⟨ Syn.C.sym Syn.v𝓏 ⟩
+      Syn.𝓏 Syn.[ (Syn.! Syn.∷ Syn.𝒵 (𝔦₀′-η _ _ t) Syn.⦅ Syn.𝒵 (𝔦₀-η _ _ x) ⦆) Syn.∘ _ ]
+    ∎)
+    where open Reasoning Syn.C.setoid
+
   𝔦₀ : ∀ A → 𝔑𝔣₀ A Psh.⇒ Tm.₀ (𝟙 · A)
   𝔦₀ A = ntHelper (record
     { η = λ Γ → record { _⟨$⟩_ = 𝔦₀-η A Γ ; cong = 𝔦₀-cong A Γ }
-    ; commute = {!!}
+    ; commute = 𝔦₀-commute A
     })
 
   𝔦₀′ : ∀ A → 𝔑𝔢₀ A Psh.⇒ Tm.₀ (𝟙 · A)
   𝔦₀′ A = ntHelper (record
     { η = λ Γ → record { _⟨$⟩_ = 𝔦₀′-η A Γ ; cong = 𝔦₀′-cong A Γ }
-    ; commute = {!!}
+    ; commute = 𝔦₀′-commute A
     })
 
 𝔦 : ∀ Δ → 𝔑𝔣 Δ Psh.⇒ Tm.₀ Δ
