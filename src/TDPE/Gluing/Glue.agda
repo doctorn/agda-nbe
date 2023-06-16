@@ -195,13 +195,14 @@ private
   𝔦₀′-commute : ∀ A {Γ Δ} (f : 𝕎 [ Δ , Γ ]) {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)}
                → x ≡ y → 𝔦₀′-η A Δ (Repr.+′ f x) Syn.S.≈ Syn.! Syn.∷ Syn.𝓏 Syn.[ 𝔦₀′-η A Γ y Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f) ]
 
+  v : ∀ {Γ A} → Repr.var Γ A → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
+  v 𝓏     = Syn.! Syn.∷ Syn.𝓏
+  v (π x) = Syn.! Syn.∷ Syn.p (Syn.𝒵 (v x))
+
   𝔦₀-η _       Γ (ι x) = 𝔦₀′-η _ Γ x
   𝔦₀-η (A ⇒ B) Γ (Λ x) = Syn.! Syn.∷ Syn.Λ (Syn.𝒵 (𝔦₀-η B (Γ · A) x))
 
   𝔦₀′-η A Γ (𝓋 x)     = v x
-    where v : ∀ {Γ A} → Repr.var Γ A → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
-          v 𝓏     = Syn.! Syn.∷ Syn.𝓏
-          v (π x) = Syn.! Syn.∷ Syn.p (Syn.𝒵 (v x))
   𝔦₀′-η A Γ (f ⦅ x ⦆) = Syn.! Syn.∷ Syn.𝒵 (𝔦₀′-η _ Γ f) Syn.⦅ Syn.𝒵 (𝔦₀-η _ Γ x) ⦆
 
   -- NOTE(@doctorn) these proofs could just be done with `Setoid.reflexive`, but I wanted to future proof
@@ -235,9 +236,44 @@ private
   𝔦₀′-commute A f {𝓋 x} PE.refl =
     Syn.S.trans (Syn.S.trans (I f x) (Syn.S.sym Syn.𝒵η)) (Syn.∷-congᵣ (Syn.C.sym Syn.v𝒵))
     where I : ∀ {Γ Δ} (f : 𝕎 [ Δ , Γ ]) (x : Repr.var Γ A)
-              → 𝔦₀′-η _ _ (𝓋 (Repr.+var f x)) Syn.S.≈ 𝔦₀′-η _ _ (𝓋 x) Syn.∘ Functor.₁ (⟦_⟧ Syn.CC) f
-          I f 𝓏     = {!!}
-          I f (π x) = {!!}
+              → v (Repr.+var f x) Syn.S.≈ v x Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f)
+          I {Γ · A} {Δ} (ω₁ f) 𝓏 = Syn.∷-congᵣ (begin
+              Syn.p (Syn.𝒵 (v (Repr.+var f 𝓏)))
+            ≈⟨ Syn.p-cong (Syn.𝒵-cong (I f 𝓏)) ⟩
+              Syn.p (Syn.𝒵 (v (𝓏 {Γ = Γ}) Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f)))
+            ≈⟨ Syn.p-π ⟩
+              Syn.𝓏 Syn.[ Syn.π (Functor.₁ (⟦_⟧ Syn.CC) f) ]
+            ≈⟨ Syn.sb-congᵣ (Syn.S.sym (Syn.S.trans Syn.π-lemma (Syn.π-cong Syn.∘-identityʳ))) ⟩
+              Syn.𝓏 Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id ]
+            ∎)
+            where open Reasoning Syn.C.setoid
+          I {Γ · A} {Δ · A} (ω₂ f) 𝓏 = Syn.S.sym (Syn.∷-congᵣ Syn.v𝓏)
+          I {Γ · A} {Δ} (ω₁ f) (π x) = Syn.∷-congᵣ (begin
+              Syn.p (Syn.𝒵 (v (Repr.+var f (π x))))
+            ≈⟨ Syn.p-cong (Syn.𝒵-cong (I f (π x))) ⟩
+              Syn.p (Syn.p (Syn.𝒵 (v x)) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f ])
+            ≈⟨ Syn.p-π ⟩
+              Syn.p (Syn.𝒵 (v x)) Syn.[ Syn.π (Functor.₁ (⟦_⟧ Syn.CC) f) ]
+            ≈⟨ Syn.sb-congᵣ (Syn.S.sym (Syn.S.trans Syn.π-lemma (Syn.π-cong Syn.∘-identityʳ))) ⟩
+              Syn.p (Syn.𝒵 (v x)) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id ]
+            ∎)
+            where open Reasoning Syn.C.setoid
+          I {Γ · A} {Δ · A} (ω₂ f) (π x) = Syn.∷-congᵣ (begin
+              Syn.p (Syn.𝒵 (v (Repr.+var f x)))
+            ≈⟨ Syn.p-cong (Syn.𝒵-cong (I f x)) ⟩
+              Syn.p (Syn.𝒵 (v x Syn.∘ Functor.₁ (⟦_⟧ Syn.CC) f))
+            ≈⟨ Syn.𝒵p {γ = v x Syn.∘ Functor.₁ (⟦_⟧ Syn.CC) f} ⟩
+              Syn.𝓏 Syn.[ Syn.π (v x Syn.∘ Functor.₁ ⟦ Syn.CC ⟧ f) ]
+            ≈⟨ Syn.sb-congᵣ (Syn.S.sym Syn.π-lemma) ⟩
+              Syn.𝓏 Syn.[ v x Syn.∘ Syn.π (Functor.₁ ⟦ Syn.CC ⟧ f) ]
+            ≈⟨ Syn.C.sym Syn.sb-assoc ⟩
+              Syn.𝓏 Syn.[ v x ] Syn.[ Syn.π (Functor.₁ ⟦ Syn.CC ⟧ f) ]
+            ≈⟨ Syn.sb-cong₂ Syn.v𝒵 (Syn.S.sym (Syn.S.trans Syn.π-lemma (Syn.π-cong Syn.∘-identityʳ))) ⟩
+              Syn.𝒵 (v x) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id ]
+            ≈⟨ Syn.C.sym Syn.vp ⟩
+              Syn.p (Syn.𝒵 (v x)) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id Syn.∷ Syn.𝓏 ]
+            ∎)
+            where open Reasoning Syn.C.setoid
   𝔦₀′-commute A f {t ⦅ x ⦆} PE.refl = Syn.∷-congᵣ (begin
       Syn.𝒵 (𝔦₀′-η _ _ (Repr.+′ f t)) Syn.⦅ Syn.𝒵 (𝔦₀-η _ _ (Repr.+ f x)) ⦆
     ≈⟨ Syn.app-cong₂ (Syn.𝒵-cong (𝔦₀′-commute _ f {t} PE.refl)) (Syn.𝒵-cong (𝔦₀-commute _ f {x} PE.refl)) ⟩

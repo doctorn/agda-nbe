@@ -150,6 +150,7 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
                   (CCC.Λ-cong (∘-resp-≈ʳ (CC.Ext.⟨⟩-cong₂ (sym (⟦_⟧-π-lemma {γ = γ})) refl)))
           II (sb-assoc₀ {γ = γ} {δ}) =
             trans assoc (∘-resp-≈ʳ (sym (⟦_⟧-homomorphism {δ = δ} {γ})))
+          II (p-π₀ {γ = γ} {f}) = trans assoc (∘-resp-≈ʳ (sym (⟦_⟧-π-lemma {γ = γ})))
 
   ⟦_⟧ : Functor 𝕋𝕞 𝒞
   ⟦_⟧ = record
