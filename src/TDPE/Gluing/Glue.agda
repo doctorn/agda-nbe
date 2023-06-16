@@ -12,7 +12,7 @@ open import Relation.Binary using (IsEquivalence; Setoid)
 open import Relation.Binary.PropositionalEquality as PE using (_≡_)
 import Relation.Binary.Reasoning.Setoid as Reasoning
 
-open import Categories.Category using (Category; _[_,_])
+open import Categories.Category using (Category)
 open import Categories.Functor using (Functor; _∘F_)
 open import Categories.NaturalTransformation using (ntHelper; NTHelper; NaturalTransformation)
 open import Categories.Category.Construction.Comma using (Comma; CommaObj; Comma⇒)
@@ -21,16 +21,20 @@ open import Categories.Yoneda
 open import TDPE.Gluing.Categories.Functor.Properties using (precompose)
 
 open import TDPE.Gluing.Contexts 𝒰
-open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧; ω₁; ω₂)
+open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧; ω₁; ω₂; 𝒲)
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
 open import TDPE.Gluing.Representation 𝒰 as Repr
   using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣; 𝓋; 𝓏; π; ι; Λ; _⦅_⦆)
-import TDPE.Gluing.Syntax 𝒰 as Syn
+import TDPE.Gluing.Syntax 𝒰 as S
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 
-Tm : Functor Syn.𝕋𝕞 Psh.Psh
-Tm = precompose (Functor.op (⟦_⟧ Syn.CC)) ∘F Yoneda.embed Syn.𝕋𝕞
+W = ⟦_⟧ S.CC
+
+module W = Functor W
+
+Tm : Functor S.𝕋𝕞 Psh.Psh
+Tm = precompose (Functor.op W) ∘F Yoneda.embed S.𝕋𝕞
 
 module Tm = Functor Tm
 
@@ -62,11 +66,11 @@ private
             → Setoid._≈_ (𝔑𝔢₀.₀ A Δ) x y
             → Setoid._≈_ (𝓡₀.₀ A Δ) (↓₀-η A Δ x) (↓₀-η A Δ y)
 
-  ↑₀-commute : ∀ A {Γ Δ} (w : 𝕎 [ Δ , Γ ])
+  ↑₀-commute : ∀ A {Γ Δ} (w : 𝒲 Δ Γ)
                → ∀ {x y : Setoid.Carrier (𝓡₀.₀ A Γ)}
                → Setoid._≈_ (𝓡₀.₀ A Γ) x y
                → Setoid._≈_ (𝔑𝔣₀.₀ A Δ) (↑₀-η A Δ (𝓡₀.₁ A w ⟨$⟩ x)) (Repr.+ w (↑₀-η A Γ y))
-  ↓₀-commute : ∀ A {Γ Δ} (w : 𝕎 [ Δ , Γ ])
+  ↓₀-commute : ∀ A {Γ Δ} (w : 𝒲 Δ Γ)
                → ∀ {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)}
                → Setoid._≈_ (𝔑𝔢₀.₀ A Γ) x y
                → Setoid._≈_ (𝓡₀.₀ A Δ) (↓₀-η A Δ (Repr.+′ w x)) (𝓡₀.₁ A w ⟨$⟩ ↓₀-η A Γ y)
@@ -187,107 +191,107 @@ private
   𝔦₀-η : ∀ A Γ → Setoid.Carrier (𝔑𝔣₀.₀ A Γ) → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
   𝔦₀′-η : ∀ A Γ → Setoid.Carrier (𝔑𝔢₀.₀ A Γ) → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
 
-  𝔦₀-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)} → x ≡ y → 𝔦₀-η A Γ x Syn.S.≈ 𝔦₀-η A Γ y
-  𝔦₀′-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)} → x ≡ y → 𝔦₀′-η A Γ x Syn.S.≈ 𝔦₀′-η A Γ y
+  𝔦₀-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)} → x ≡ y → 𝔦₀-η A Γ x S.S.≈ 𝔦₀-η A Γ y
+  𝔦₀′-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)} → x ≡ y → 𝔦₀′-η A Γ x S.S.≈ 𝔦₀′-η A Γ y
 
-  𝔦₀-commute : ∀ A {Γ Δ} (f : 𝕎 [ Δ , Γ ]) {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)}
-               → x ≡ y → 𝔦₀-η A Δ (Repr.+ f x) Syn.S.≈ Syn.! Syn.∷ Syn.𝓏 Syn.[ 𝔦₀-η A Γ y Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f) ]
-  𝔦₀′-commute : ∀ A {Γ Δ} (f : 𝕎 [ Δ , Γ ]) {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)}
-               → x ≡ y → 𝔦₀′-η A Δ (Repr.+′ f x) Syn.S.≈ Syn.! Syn.∷ Syn.𝓏 Syn.[ 𝔦₀′-η A Γ y Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f) ]
+  𝔦₀-commute : ∀ A {Γ Δ} (f : 𝒲 Δ Γ) {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)}
+               → x ≡ y → 𝔦₀-η A Δ (Repr.+ f x) S.S.≈ S.! S.∷ S.𝓏 S.[ 𝔦₀-η A Γ y S.∘ W.₁ f ]
+  𝔦₀′-commute : ∀ A {Γ Δ} (f : 𝒲 Δ Γ) {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)}
+               → x ≡ y → 𝔦₀′-η A Δ (Repr.+′ f x) S.S.≈ S.! S.∷ S.𝓏 S.[ 𝔦₀′-η A Γ y S.∘ W.₁ f ]
 
   v : ∀ {Γ A} → Repr.var Γ A → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
-  v 𝓏     = Syn.! Syn.∷ Syn.𝓏
-  v (π x) = Syn.! Syn.∷ Syn.p (Syn.𝒵 (v x))
+  v 𝓏     = S.! S.∷ S.𝓏
+  v (π x) = S.! S.∷ S.p (S.𝒵 (v x))
 
   𝔦₀-η _       Γ (ι x) = 𝔦₀′-η _ Γ x
-  𝔦₀-η (A ⇒ B) Γ (Λ x) = Syn.! Syn.∷ Syn.Λ (Syn.𝒵 (𝔦₀-η B (Γ · A) x))
+  𝔦₀-η (A ⇒ B) Γ (Λ x) = S.! S.∷ S.Λ (S.𝒵 (𝔦₀-η B (Γ · A) x))
 
   𝔦₀′-η A Γ (𝓋 x)     = v x
-  𝔦₀′-η A Γ (f ⦅ x ⦆) = Syn.! Syn.∷ Syn.𝒵 (𝔦₀′-η _ Γ f) Syn.⦅ Syn.𝒵 (𝔦₀-η _ Γ x) ⦆
+  𝔦₀′-η A Γ (f ⦅ x ⦆) = S.! S.∷ S.𝒵 (𝔦₀′-η _ Γ f) S.⦅ S.𝒵 (𝔦₀-η _ Γ x) ⦆
 
   -- NOTE(@doctorn) these proofs could just be done with `Setoid.reflexive`, but I wanted to future proof
   -- them a bit for partial evaluation
   𝔦₀-cong _       Γ {ι x} PE.refl = 𝔦₀′-cong _ Γ {x} PE.refl
-  𝔦₀-cong (A ⇒ B) Γ {Λ x} PE.refl = Syn.∷-congᵣ (Syn.Λ-cong (Syn.𝒵-cong (𝔦₀-cong B (Γ · A) {x} PE.refl)))
+  𝔦₀-cong (A ⇒ B) Γ {Λ x} PE.refl = S.∷-congᵣ (S.Λ-cong (S.𝒵-cong (𝔦₀-cong B (Γ · A) {x} PE.refl)))
 
   𝔦₀′-cong A Γ {𝓋 x}    PE.refl = Setoid.reflexive (Functor.₀ (Tm.₀ (𝟙 · A)) Γ) PE.refl
   𝔦₀′-cong A Γ {f ⦅ x ⦆} PE.refl =
-    Syn.∷-congᵣ (Syn.app-cong₂ (Syn.𝒵-cong (𝔦₀′-cong _ Γ {f} PE.refl))
-      (Syn.𝒵-cong (𝔦₀-cong _ Γ {x} PE.refl)))
+    S.∷-congᵣ (S.app-cong₂ (S.𝒵-cong (𝔦₀′-cong _ Γ {f} PE.refl))
+      (S.𝒵-cong (𝔦₀-cong _ Γ {x} PE.refl)))
 
   𝔦₀-commute _       f {x = ι x} PE.refl = 𝔦₀′-commute _ f {x} PE.refl
-  𝔦₀-commute (A ⇒ B) f {x = Λ x} PE.refl = Syn.∷-congᵣ (begin
-      Syn.Λ (Syn.𝒵 (𝔦₀-η B _ (Repr.+ (ω₂ f) x)))
-    ≈⟨ Syn.Λ-cong (Syn.𝒵-cong (𝔦₀-commute B (ω₂ f) {x} PE.refl)) ⟩
-      Syn.Λ (Syn.𝓏 Syn.[ 𝔦₀-η B _ x Syn.∘ _ ])
-    ≈⟨ Syn.Λ-cong Syn.v𝒵 ⟩
-      Syn.Λ (Syn.𝒵 (𝔦₀-η B _ x Syn.∘ _))
-    ≈⟨ Syn.Λ-cong (Syn.C.sym (Syn.sb-comp {γ = 𝔦₀-η B _ x})) ⟩
-      Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x) Syn.[ _ ])
-    ≈⟨ Syn.Λ-cong (Syn.sb-congᵣ (Syn.∷-congₗ (Syn.S.trans (Syn.S.sym Syn.πβ) Syn.∘-identityʳ))) ⟩
-      Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x) Syn.[ _ ])
-    ≈⟨ Syn.C.sym Syn.sb-lam ⟩
-      Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x)) Syn.[ _ ]
-    ≈⟨ Syn.C.sym Syn.v𝓏 ⟩
-      Syn.𝓏 Syn.[ (Syn.! Syn.∷ Syn.Λ (Syn.𝒵 (𝔦₀-η _ _ x))) Syn.∘ _ ]
+  𝔦₀-commute (A ⇒ B) f {x = Λ x} PE.refl = S.∷-congᵣ (begin
+      S.Λ (S.𝒵 (𝔦₀-η B _ (Repr.+ (ω₂ f) x)))
+    ≈⟨ S.Λ-cong (S.𝒵-cong (𝔦₀-commute B (ω₂ f) {x} PE.refl)) ⟩
+      S.Λ (S.𝓏 S.[ 𝔦₀-η B _ x S.∘ _ ])
+    ≈⟨ S.Λ-cong S.v𝒵 ⟩
+      S.Λ (S.𝒵 (𝔦₀-η B _ x S.∘ _))
+    ≈⟨ S.Λ-cong (S.C.sym (S.sb-comp {γ = 𝔦₀-η B _ x})) ⟩
+      S.Λ (S.𝒵 (𝔦₀-η _ _ x) S.[ _ ])
+    ≈⟨ S.Λ-cong (S.sb-congᵣ (S.∷-congₗ (S.S.trans (S.S.sym S.πβ) S.∘-identityʳ))) ⟩
+      S.Λ (S.𝒵 (𝔦₀-η _ _ x) S.[ _ ])
+    ≈⟨ S.C.sym S.sb-lam ⟩
+      S.Λ (S.𝒵 (𝔦₀-η _ _ x)) S.[ _ ]
+    ≈⟨ S.C.sym S.v𝓏 ⟩
+      S.𝓏 S.[ (S.! S.∷ S.Λ (S.𝒵 (𝔦₀-η _ _ x))) S.∘ _ ]
     ∎)
-    where open Reasoning Syn.C.setoid
+    where open Reasoning S.C.setoid
 
   𝔦₀′-commute A f {𝓋 x} PE.refl =
-    Syn.S.trans (Syn.S.trans (I f x) (Syn.S.sym Syn.𝒵η)) (Syn.∷-congᵣ (Syn.C.sym Syn.v𝒵))
-    where I : ∀ {Γ Δ} (f : 𝕎 [ Δ , Γ ]) (x : Repr.var Γ A)
-              → v (Repr.+var f x) Syn.S.≈ v x Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f)
-          I {Γ · A} {Δ} (ω₁ f) 𝓏 = Syn.∷-congᵣ (begin
-              Syn.p (Syn.𝒵 (v (Repr.+var f 𝓏)))
-            ≈⟨ Syn.p-cong (Syn.𝒵-cong (I f 𝓏)) ⟩
-              Syn.p (Syn.𝒵 (v (𝓏 {Γ = Γ}) Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) f)))
-            ≈⟨ Syn.p-π ⟩
-              Syn.𝓏 Syn.[ Syn.π (Functor.₁ (⟦_⟧ Syn.CC) f) ]
-            ≈⟨ Syn.sb-congᵣ (Syn.S.sym (Syn.S.trans Syn.π-lemma (Syn.π-cong Syn.∘-identityʳ))) ⟩
-              Syn.𝓏 Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id ]
+    S.S.trans (S.S.trans (I f x) (S.S.sym S.𝒵η)) (S.∷-congᵣ (S.C.sym S.v𝒵))
+    where I : ∀ {Γ Δ} (f : 𝒲 Δ Γ) (x : Repr.var Γ A)
+              → v (Repr.+var f x) S.S.≈ v x S.∘ W.₁ f
+          I {Γ · A} {Δ} (ω₁ f) 𝓏 = S.∷-congᵣ (begin
+              S.p (S.𝒵 (v (Repr.+var f 𝓏)))
+            ≈⟨ S.p-cong (S.𝒵-cong (I f 𝓏)) ⟩
+              S.p (S.𝒵 (v (𝓏 {Γ = Γ}) S.∘ W.₁ f))
+            ≈⟨ S.p-π ⟩
+              S.𝓏 S.[ S.π (W.₁ f) ]
+            ≈⟨ S.sb-congᵣ (S.S.sym S.π-id) ⟩
+              S.𝓏 S.[ W.₁ f S.∘ S.π S.id ]
             ∎)
-            where open Reasoning Syn.C.setoid
-          I {Γ · A} {Δ · A} (ω₂ f) 𝓏 = Syn.S.sym (Syn.∷-congᵣ Syn.v𝓏)
-          I {Γ · A} {Δ} (ω₁ f) (π x) = Syn.∷-congᵣ (begin
-              Syn.p (Syn.𝒵 (v (Repr.+var f (π x))))
-            ≈⟨ Syn.p-cong (Syn.𝒵-cong (I f (π x))) ⟩
-              Syn.p (Syn.p (Syn.𝒵 (v x)) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f ])
-            ≈⟨ Syn.p-π ⟩
-              Syn.p (Syn.𝒵 (v x)) Syn.[ Syn.π (Functor.₁ (⟦_⟧ Syn.CC) f) ]
-            ≈⟨ Syn.sb-congᵣ (Syn.S.sym (Syn.S.trans Syn.π-lemma (Syn.π-cong Syn.∘-identityʳ))) ⟩
-              Syn.p (Syn.𝒵 (v x)) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id ]
+            where open Reasoning S.C.setoid
+          I {Γ · A} {Δ · A} (ω₂ f) 𝓏 = S.S.sym (S.∷-congᵣ S.v𝓏)
+          I {Γ · A} {Δ} (ω₁ f) (π x) = S.∷-congᵣ (begin
+              S.p (S.𝒵 (v (Repr.+var f (π x))))
+            ≈⟨ S.p-cong (S.𝒵-cong (I f (π x))) ⟩
+              S.p (S.p (S.𝒵 (v x)) S.[ W.₁ f ])
+            ≈⟨ S.p-π ⟩
+              S.p (S.𝒵 (v x)) S.[ S.π (W.₁ f) ]
+            ≈⟨ S.sb-congᵣ (S.S.sym S.π-id) ⟩
+              S.p (S.𝒵 (v x)) S.[ W.₁ f S.∘ S.π S.id ]
             ∎)
-            where open Reasoning Syn.C.setoid
-          I {Γ · A} {Δ · A} (ω₂ f) (π x) = Syn.∷-congᵣ (begin
-              Syn.p (Syn.𝒵 (v (Repr.+var f x)))
-            ≈⟨ Syn.p-cong (Syn.𝒵-cong (I f x)) ⟩
-              Syn.p (Syn.𝒵 (v x Syn.∘ Functor.₁ (⟦_⟧ Syn.CC) f))
-            ≈⟨ Syn.𝒵p {γ = v x Syn.∘ Functor.₁ (⟦_⟧ Syn.CC) f} ⟩
-              Syn.𝓏 Syn.[ Syn.π (v x Syn.∘ Functor.₁ ⟦ Syn.CC ⟧ f) ]
-            ≈⟨ Syn.sb-congᵣ (Syn.S.sym Syn.π-lemma) ⟩
-              Syn.𝓏 Syn.[ v x Syn.∘ Syn.π (Functor.₁ ⟦ Syn.CC ⟧ f) ]
-            ≈⟨ Syn.C.sym Syn.sb-assoc ⟩
-              Syn.𝓏 Syn.[ v x ] Syn.[ Syn.π (Functor.₁ ⟦ Syn.CC ⟧ f) ]
-            ≈⟨ Syn.sb-cong₂ Syn.v𝒵 (Syn.S.sym (Syn.S.trans Syn.π-lemma (Syn.π-cong Syn.∘-identityʳ))) ⟩
-              Syn.𝒵 (v x) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id ]
-            ≈⟨ Syn.C.sym Syn.vp ⟩
-              Syn.p (Syn.𝒵 (v x)) Syn.[ Functor.₁ (⟦_⟧ Syn.CC) f Syn.∘ Syn.π Syn.id Syn.∷ Syn.𝓏 ]
+            where open Reasoning S.C.setoid
+          I {Γ · A} {Δ · A} (ω₂ f) (π x) = S.∷-congᵣ (begin
+              S.p (S.𝒵 (v (Repr.+var f x)))
+            ≈⟨ S.p-cong (S.𝒵-cong (I f x)) ⟩
+              S.p (S.𝒵 (v x S.∘ W.₁ f))
+            ≈⟨ S.𝒵p {γ = v x S.∘ W.₁ f} ⟩
+              S.𝓏 S.[ S.π (v x S.∘ W.₁ f) ]
+            ≈⟨ S.sb-congᵣ (S.S.sym S.π-lemma) ⟩
+              S.𝓏 S.[ v x S.∘ S.π (W.₁ f) ]
+            ≈⟨ S.C.sym S.sb-assoc ⟩
+              S.𝓏 S.[ v x ] S.[ S.π (W.₁ f) ]
+            ≈⟨ S.sb-cong₂ S.v𝒵 (S.S.sym S.π-id) ⟩
+              S.𝒵 (v x) S.[ W.₁ f S.∘ S.π S.id ]
+            ≈⟨ S.C.sym S.vp ⟩
+              S.p (S.𝒵 (v x)) S.[ W.₁ f S.∘ S.π S.id S.∷ S.𝓏 ]
             ∎)
-            where open Reasoning Syn.C.setoid
-  𝔦₀′-commute A f {t ⦅ x ⦆} PE.refl = Syn.∷-congᵣ (begin
-      Syn.𝒵 (𝔦₀′-η _ _ (Repr.+′ f t)) Syn.⦅ Syn.𝒵 (𝔦₀-η _ _ (Repr.+ f x)) ⦆
-    ≈⟨ Syn.app-cong₂ (Syn.𝒵-cong (𝔦₀′-commute _ f {t} PE.refl)) (Syn.𝒵-cong (𝔦₀-commute _ f {x} PE.refl)) ⟩
-      Syn.𝓏 Syn.[ _ ] Syn.⦅ Syn.𝓏 Syn.[ _ ] ⦆
-    ≈⟨ Syn.app-cong₂ Syn.v𝒵 Syn.v𝒵 ⟩
-      _ Syn.⦅ _ ⦆
-    ≈⟨ Syn.C.sym (Syn.app-cong₂ (Syn.sb-comp {γ = 𝔦₀′-η _ _ t}) (Syn.sb-comp {γ = 𝔦₀-η _ _ x})) ⟩
-      _ Syn.⦅ _ ⦆
-    ≈⟨ Syn.C.sym Syn.sb-app ⟩
-      (Syn.𝒵 (𝔦₀′-η _ _ t) Syn.⦅ Syn.𝒵 (𝔦₀-η _ _ x) ⦆) Syn.[ _ ]
-    ≈⟨ Syn.C.sym Syn.v𝓏 ⟩
-      Syn.𝓏 Syn.[ (Syn.! Syn.∷ Syn.𝒵 (𝔦₀′-η _ _ t) Syn.⦅ Syn.𝒵 (𝔦₀-η _ _ x) ⦆) Syn.∘ _ ]
+            where open Reasoning S.C.setoid
+  𝔦₀′-commute A f {t ⦅ x ⦆} PE.refl = S.∷-congᵣ (begin
+      S.𝒵 (𝔦₀′-η _ _ (Repr.+′ f t)) S.⦅ S.𝒵 (𝔦₀-η _ _ (Repr.+ f x)) ⦆
+    ≈⟨ S.app-cong₂ (S.𝒵-cong (𝔦₀′-commute _ f {t} PE.refl)) (S.𝒵-cong (𝔦₀-commute _ f {x} PE.refl)) ⟩
+      S.𝓏 S.[ _ ] S.⦅ S.𝓏 S.[ _ ] ⦆
+    ≈⟨ S.app-cong₂ S.v𝒵 S.v𝒵 ⟩
+      _ S.⦅ _ ⦆
+    ≈⟨ S.C.sym (S.app-cong₂ (S.sb-comp {γ = 𝔦₀′-η _ _ t}) (S.sb-comp {γ = 𝔦₀-η _ _ x})) ⟩
+      _ S.⦅ _ ⦆
+    ≈⟨ S.C.sym S.sb-app ⟩
+      (S.𝒵 (𝔦₀′-η _ _ t) S.⦅ S.𝒵 (𝔦₀-η _ _ x) ⦆) S.[ _ ]
+    ≈⟨ S.C.sym S.v𝓏 ⟩
+      S.𝓏 S.[ (S.! S.∷ S.𝒵 (𝔦₀′-η _ _ t) S.⦅ S.𝒵 (𝔦₀-η _ _ x) ⦆) S.∘ _ ]
     ∎)
-    where open Reasoning Syn.C.setoid
+    where open Reasoning S.C.setoid
 
   𝔦₀ : ∀ A → 𝔑𝔣₀ A Psh.⇒ Tm.₀ (𝟙 · A)
   𝔦₀ A = ntHelper (record
@@ -303,13 +307,13 @@ private
 
 𝔦 : ∀ Δ → 𝔑𝔣 Δ Psh.⇒ Tm.₀ Δ
 𝔦 𝟙       = ntHelper (record
-  { η = λ Γ → record { _⟨$⟩_ = λ _ → Syn.! ; cong = λ _ → Syn.!η }
-  ; commute = λ _ _ → Syn.!η
+  { η = λ Γ → record { _⟨$⟩_ = λ _ → S.! ; cong = λ _ → S.!η }
+  ; commute = λ _ _ → S.!η
   })
 𝔦 (Δ · A) = ntHelper (record
   { η = λ Γ → record
-    { _⟨$⟩_ = λ { (γ Repr.∷ a) → (𝔦Δ.η Γ ⟨$⟩ γ) Syn.∷ Syn.𝒵 (𝔦₀A.η Γ ⟨$⟩ a) }
-    ; cong = λ { (γ Repr.∷ a) → Syn.∷-cong₂ (cong (𝔦Δ.η Γ) γ) (Syn.𝒵-cong (cong (𝔦₀A.η Γ) a)) }
+    { _⟨$⟩_ = λ { (γ Repr.∷ a) → (𝔦Δ.η Γ ⟨$⟩ γ) S.∷ S.𝒵 (𝔦₀A.η Γ ⟨$⟩ a) }
+    ; cong = λ { (γ Repr.∷ a) → S.∷-cong₂ (cong (𝔦Δ.η Γ) γ) (S.𝒵-cong (cong (𝔦₀A.η Γ) a)) }
     }
   ; commute = {!!}
   })
@@ -318,13 +322,13 @@ private
 
 𝔦′ : ∀ Δ → 𝔑𝔢 Δ Psh.⇒ Functor.₀ Tm Δ
 𝔦′ 𝟙       = ntHelper (record
-  { η = λ Γ → record { _⟨$⟩_ = λ _ → Syn.! ; cong = λ x → Syn.!η }
-  ; commute = λ _ _ → Syn.!η
+  { η = λ Γ → record { _⟨$⟩_ = λ _ → S.! ; cong = λ x → S.!η }
+  ; commute = λ _ _ → S.!η
   })
 𝔦′ (Δ · A) = ntHelper (record
   { η = λ Γ → record
-    { _⟨$⟩_ = λ { (γ Repr.∷ a) → (𝔦′Δ.η Γ ⟨$⟩ γ) Syn.∷ Syn.𝒵 (𝔦₀′A.η Γ ⟨$⟩ a) }
-    ; cong = λ { (γ Repr.∷ a) → Syn.∷-cong₂ (cong (𝔦′Δ.η Γ) γ) (Syn.𝒵-cong (cong (𝔦₀′A.η Γ) a)) }
+    { _⟨$⟩_ = λ { (γ Repr.∷ a) → (𝔦′Δ.η Γ ⟨$⟩ γ) S.∷ S.𝒵 (𝔦₀′A.η Γ ⟨$⟩ a) }
+    ; cong = λ { (γ Repr.∷ a) → S.∷-cong₂ (cong (𝔦′Δ.η Γ) γ) (S.𝒵-cong (cong (𝔦₀′A.η Γ) a)) }
     }
   ; commute = {!!}
   })
@@ -335,34 +339,34 @@ private
 𝔮 Δ = 𝔦 Δ Psh.∘ ↑ Δ
 
 yoga₀ : ∀ {A} → 𝔦₀ A Psh.∘ ↑₀ A Psh.∘ ↓₀ A Psh.≈ 𝔦₀′ A
-yoga₀ {A = ` A `} PE.refl = Syn.S.refl
+yoga₀ {A = ` A `} PE.refl = S.S.refl
 yoga₀ {A = A ⇒ B} {Γ} {x} {_} PE.refl =
-  Syn.S.trans
-    (Syn.∷-congᵣ (Syn.Λ-cong I))
-    (Syn.S.sym (ContextualCartesianClosed.η Syn.CCC (𝔦₀′-η (A ⇒ B) Γ x)))
-  where open Reasoning Syn.C.setoid
+  S.S.trans
+    (S.∷-congᵣ (S.Λ-cong I))
+    (S.S.sym (ContextualCartesianClosed.η S.CCC (𝔦₀′-η (A ⇒ B) Γ x)))
+  where open Reasoning S.C.setoid
 
         I = begin
-            Syn.𝒵 (𝔦₀-η B (Γ · A) (↑₀-η B (Γ · A) (↓₀-η B (Γ · A) (Repr.+′ (ω₁ (𝕎.id)) x ⦅ ↑₀-η A (Γ · A) (↓₀-η A (Γ · A) (𝓋 𝓏)) ⦆))))
-          ≈⟨ Syn.𝒵-cong (yoga₀ PE.refl) ⟩
-            Syn.𝒵 (𝔦₀′-η B (Γ · A) (Repr.+′ (ω₁ (𝕎.id)) x ⦅ ↑₀-η A (Γ · A) (↓₀-η A (Γ · A) (𝓋 𝓏)) ⦆))
-          ≈⟨ Syn.app-congᵣ (Syn.𝒵-cong (yoga₀ PE.refl)) ⟩
-            Syn.𝒵 (𝔦₀′-η (A ⇒ B) (Γ · A) (Repr.+′ (ω₁ 𝕎.id) x)) Syn.⦅ Syn.𝓏 ⦆
-          ≈⟨ Syn.app-congₗ (Syn.𝒵-cong (NaturalTransformation.commute (𝔦₀′ (A ⇒ B)) (ω₁ (𝕎.id {Γ})) {x = x} PE.refl)) ⟩
-            Syn.𝓏 Syn.[ 𝔦₀′-η (A ⇒ B) Γ x Syn.∘ (Functor.₁ (⟦_⟧ Syn.CC) (𝕎.id {Γ}) Syn.∘ ContextualCartesian.π Syn.CC) ] Syn.⦅ Syn.𝓏 ⦆
-          ≈⟨ Syn.app-congₗ (Syn.sb-congᵣ (Syn.∘-congᵣ (Syn.∘-congₗ (Functor.identity (⟦_⟧ Syn.CC) {Γ})))) ⟩
-            Syn.𝓏 Syn.[ 𝔦₀′-η (A ⇒ B) Γ x Syn.∘ (Syn.id Syn.∘ ContextualCartesian.π Syn.CC) ] Syn.⦅ Syn.𝓏 ⦆
-          ≈⟨ Syn.app-congₗ (Syn.sb-congᵣ (Syn.∘-congᵣ Syn.∘-identityˡ)) ⟩
-            Syn.𝓏 Syn.[ 𝔦₀′-η (A ⇒ B) Γ x Syn.∘ Syn.π Syn.id ] Syn.⦅ Syn.𝓏 ⦆
-          ≈⟨ Syn.C.sym (Syn.app-cong₂ Syn.vp Syn.v𝓏) ⟩
-            (Syn.p Syn.𝓏 Syn.[ _ Syn.∷ Syn.𝓏 ]) Syn.⦅ Syn.𝓏 Syn.[ _ Syn.∷ Syn.𝓏 ] ⦆
-          ≈⟨ Syn.C.sym Syn.sb-app ⟩
-            (Syn.p Syn.𝓏 Syn.⦅ Syn.𝓏 ⦆) Syn.[ _ Syn.∷ Syn.𝓏 ]
+            S.𝒵 (𝔦₀-η B (Γ · A) (↑₀-η B (Γ · A) (↓₀-η B (Γ · A) (Repr.+′ (ω₁ (𝕎.id)) x ⦅ ↑₀-η A (Γ · A) (↓₀-η A (Γ · A) (𝓋 𝓏)) ⦆))))
+          ≈⟨ S.𝒵-cong (yoga₀ PE.refl) ⟩
+            S.𝒵 (𝔦₀′-η B (Γ · A) (Repr.+′ (ω₁ (𝕎.id)) x ⦅ ↑₀-η A (Γ · A) (↓₀-η A (Γ · A) (𝓋 𝓏)) ⦆))
+          ≈⟨ S.app-congᵣ (S.𝒵-cong (yoga₀ PE.refl)) ⟩
+            S.𝒵 (𝔦₀′-η (A ⇒ B) (Γ · A) (Repr.+′ (ω₁ 𝕎.id) x)) S.⦅ S.𝓏 ⦆
+          ≈⟨ S.app-congₗ (S.𝒵-cong (NaturalTransformation.commute (𝔦₀′ (A ⇒ B)) (ω₁ (𝕎.id {Γ})) {x = x} PE.refl)) ⟩
+            S.𝓏 S.[ 𝔦₀′-η (A ⇒ B) Γ x S.∘ (W.₁ (𝕎.id {Γ}) S.∘ S.π S.id) ] S.⦅ S.𝓏 ⦆
+          ≈⟨ S.app-congₗ (S.sb-congᵣ (S.∘-congᵣ (S.∘-congₗ (W.identity {Γ})))) ⟩
+            S.𝓏 S.[ 𝔦₀′-η (A ⇒ B) Γ x S.∘ (S.id S.∘ S.π S.id) ] S.⦅ S.𝓏 ⦆
+          ≈⟨ S.app-congₗ (S.sb-congᵣ (S.∘-congᵣ S.∘-identityˡ)) ⟩
+            S.𝓏 S.[ 𝔦₀′-η (A ⇒ B) Γ x S.∘ S.π S.id ] S.⦅ S.𝓏 ⦆
+          ≈⟨ S.C.sym (S.app-cong₂ S.vp S.v𝓏) ⟩
+            (S.p S.𝓏 S.[ _ S.∷ S.𝓏 ]) S.⦅ S.𝓏 S.[ _ S.∷ S.𝓏 ] ⦆
+          ≈⟨ S.C.sym S.sb-app ⟩
+            (S.p S.𝓏 S.⦅ S.𝓏 ⦆) S.[ _ S.∷ S.𝓏 ]
           ∎
 
 yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
-yoga {Δ = 𝟙}     Repr.!       = Syn.!η
-yoga {Δ = Δ · A} (γ Repr.∷ a) = Syn.∷-cong₂ (yoga γ) (Syn.𝒵-cong (yoga₀ a))
+yoga {Δ = 𝟙}     Repr.!       = S.!η
+yoga {Δ = Δ · A} (γ Repr.∷ a) = S.∷-cong₂ (yoga γ) (S.𝒵-cong (yoga₀ a))
 
 {-
 CC : ContextualCartesian Gl 𝒰ᵀ
@@ -373,19 +377,19 @@ CC = record
       ; β = 𝟙
       ; f = ntHelper (record
         { η = λ X → record
-          { _⟨$⟩_ = λ _ → Syn.!
-          ; cong = λ _ → Syn.!η
+          { _⟨$⟩_ = λ _ → S.!
+          ; cong = λ _ → S.!η
           }
-        ; commute = λ _ _ → Syn.!η
+        ; commute = λ _ _ → S.!η
         })
       }
     ; ⊤-is-terminal = record
       { ! = record
         { g = Psh.!
-        ; h = Syn.!
-        ; commute = λ _ → Syn.!η
+        ; h = S.!
+        ; commute = λ _ → S.!η
         }
-      ; !-unique = λ f → Psh.!-unique (Comma⇒.g f) , Syn.S.sym Syn.!η
+      ; !-unique = λ f → Psh.!-unique (Comma⇒.g f) , S.S.sym S.!η
       }
     }
   ; _·_ = λ Γ A → record
@@ -395,28 +399,28 @@ CC = record
       { η = λ X → record
         { _⟨$⟩_ = λ x →
           (NaturalTransformation.η (CommaObj.f Γ) X ⟨$⟩ proj₁ x)
-            Syn.∷ Syn.𝒵 (NaturalTransformation.η (𝔮 (𝟙 · A)) X ⟨$⟩ (tt , proj₂ x))
+            S.∷ S.𝒵 (NaturalTransformation.η (𝔮 (𝟙 · A)) X ⟨$⟩ (tt , proj₂ x))
         ; cong = λ x≈y →
-          Syn.∷-cong₂ (cong (NaturalTransformation.η (CommaObj.f Γ) X) (proj₁ x≈y))
-                      (Syn.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
+          S.∷-cong₂ (cong (NaturalTransformation.η (CommaObj.f Γ) X) (proj₁ x≈y))
+                      (S.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
         }
       ; commute = λ f x → {!!}
       })
     }
   ; π = record
     { g = Psh.π
-    ; h = Syn.π Syn.id
+    ; h = S.π S.id
     ; commute = {!!}
     }
   ; 𝓏 = record
     { g = Psh.𝓏
-    ; h = Syn.! Syn.∷ Syn.𝓏
+    ; h = S.! S.∷ S.𝓏
     ; commute = {!!}
     }
   ; extensions = record
     { ⟨_,_⟩ = λ γ a → record
       { g = Psh.⟨ Comma⇒.g γ , Comma⇒.g a ⟩
-      ; h = Comma⇒.h γ Syn.∷ Syn.𝒵 (Comma⇒.h a)
+      ; h = Comma⇒.h γ S.∷ S.𝒵 (Comma⇒.h a)
       ; commute = {!!}
       }
     ; project₁ = {!!}
