@@ -396,7 +396,6 @@ yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
 yoga {Δ = 𝟙}     Repr.!       = S.!η
 yoga {Δ = Δ · A} (γ Repr.∷ a) = S.∷-cong₂ (yoga γ) (S.𝒵-cong (yoga₀ a))
 
-{-
 CC : ContextualCartesian Gl 𝒰ᵀ
 CC = record
   { terminal = record
@@ -430,33 +429,50 @@ CC = record
             S.∷ S.𝒵 (NaturalTransformation.η (𝔮 (𝟙 · A)) X ⟨$⟩ (tt , proj₂ x))
         ; cong = λ x≈y →
           S.∷-cong₂ (cong (NaturalTransformation.η (CommaObj.f Γ) X) (proj₁ x≈y))
-                      (S.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
+                    (S.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
         }
-      ; commute = λ f x → {!!}
+      ; commute = λ f → λ { {γ₁ , a₁} {γ₂ , a₂} (γ₁≈γ₂ , a₁≈a₂) →
+        S.∷-cong₂ (S.S.trans (S.S.trans (NaturalTransformation.commute (CommaObj.f Γ) f γ₁≈γ₂) S.∘-identityˡ ) (S.S.sym S.πβ′))
+          (S.C.trans (S.C.trans (S.𝒵-cong (NaturalTransformation.commute (𝔮 (𝟙 · A)) f (tt , a₁≈a₂))) S.v𝓏) (S.C.sym S.v𝓏)) }
       })
     }
-  ; π = record
+  ; π = λ {Δ} → record
     { g = Psh.π
     ; h = S.π S.id
-    ; commute = {!!}
+    ; commute = λ { {Γ} {γ₁ , a₁} {γ₂ , a₂} (γ₁≈γ₂ , a₁≈a₂) →
+      S.S.trans S.πβ′ (cong (NaturalTransformation.η (CommaObj.f Δ) Γ) γ₁≈γ₂) }
     }
-  ; 𝓏 = record
+  ; 𝓏 = λ {_} {A} → record
     { g = Psh.𝓏
     ; h = S.! S.∷ S.𝓏
-    ; commute = {!!}
+    ; commute = λ { {Γ} {γ₁ , a₁} {γ₂ , a₂} (γ₁≈γ₂ , a₁≈a₂) →
+      S.∷-congᵣ (S.C.trans S.v𝓏 (S.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) Γ) (tt , a₁≈a₂)))) }
     }
-  ; extensions = record
-    { ⟨_,_⟩ = λ γ a → record
+  ; extensions = λ {Γ} {A} → record
+    { ⟨_,_⟩ = λ {Δ} γ a → record
       { g = Psh.⟨ Comma⇒.g γ , Comma⇒.g a ⟩
       ; h = Comma⇒.h γ S.∷ S.𝒵 (Comma⇒.h a)
-      ; commute = {!!}
+      ; commute = λ {Γ′} {δ} {δ′} δ≈δ′ →
+        S.∷-cong₂ (Comma⇒.commute γ δ≈δ′)
+                  (S.C.trans (S.sb-comp {γ = Comma⇒.h a}) (S.𝒵-cong (Comma⇒.commute a δ≈δ′)))
       }
-    ; project₁ = {!!}
-    ; project₂ = {!!}
-    ; unique = {!!}
+    ; project₁ = λ {Γ} {h} {i} →
+      ( (λ {Δ} x → cong (NaturalTransformation.η (Comma⇒.g h) Δ) x)
+      , S.πβ′
+      )
+    ; project₂ = λ {Γ} {h} {i} →
+      ( (λ {Δ} x → tt , proj₂ (cong (NaturalTransformation.η (Comma⇒.g i) Δ) x))
+      , S.S.trans (S.∷-congᵣ S.v𝓏) S.𝒵η
+      )
+    ; unique = λ {Δ} {h} {i} {j} x y →
+      ( ContextualCartesian.Ext.unique (Psh.CC λ A₀ → 𝔑𝔣₀ ` A₀ `)
+          {CommaObj.α Γ} {A} {h = Comma⇒.g h} {Comma⇒.g i} {Comma⇒.g j} (proj₁ x) (proj₁ y)
+      , ContextualCartesian.Ext.unique S.CC (proj₂ x) (S.S.trans (proj₂ y) (S.S.sym S.𝒵η))
+      )
     }
   }
 
+{-
 CCC : ContextualCartesianClosed Gl 𝒰
 CCC = {!!}
 -}

@@ -246,6 +246,9 @@ project = S.induct S.is-equiv (λ { (γ ∷ _) → γ }) λ { (∷-stepₗ x) �
 π-id : ∀ {γ : 𝔗𝔪 Δ Γ} → γ ∘ π id S.≈ π {A = A} γ
 π-id = S.trans π-lemma (π-cong ∘-identityʳ)
 
+πβ′ : ∀ {δ : 𝔗𝔪 Ξ Δ} {a : 𝔗𝔪₀ Ξ A} → π id ∘ (δ ∷ a) S.≈ δ
+πβ′ = S.trans πβ ∘-identityˡ
+
 𝕋𝕞 : Category a a a
 𝕋𝕞 = record
   { Obj = ℭ
