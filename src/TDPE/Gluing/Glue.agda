@@ -485,10 +485,10 @@ CC = record
 CCC : ContextualCartesianClosed Gl 𝒰
 CCC = record
   { cartesian = CC
-  ; Λ = λ f → record
+  ; Λ = λ {Γ} {A} {B} f → record
     { g = Psh.Λ (Comma⇒.g f)
     ; h = S.! S.∷ S.Λ (S.𝒵 (Comma⇒.h f))
-    ; commute = λ x → {!!}
+    ; commute = λ {Δ} {x₁} {x₂} x₁≈x₂ → Λ-commute {Γ} {A} {B} f {Δ} {x₁} {x₂} x₁≈x₂
     }
   ; eval = λ {A} {B} → record
     { g = Psh.eval
@@ -505,7 +505,23 @@ CCC = record
     , ContextualCartesianClosed.unique S.CCC (proj₂ x)
     )
   }
-  where eval-commute : ∀ {A B Γ x₁ x₂} → Setoid._≈_ (Functor.₀ (CommaObj.α (⊤′ ·′ A ⇒ B ·′ A)) Γ) x₁ x₂ → _
+  where Λ-commute : ∀ {Γ A B} f {Δ x₁ x₂} → Setoid._≈_ (Functor.₀ (CommaObj.α Γ) Δ) x₁ x₂ → _
+        Λ-commute {Γ} {A} {B} f {Δ} {x₁} {x₂} x₁≈x₂ = S.∷-congᵣ (begin
+            S.Λ (S.𝒵 (Comma⇒.h f)) S.[ NaturalTransformation.η (CommaObj.f Γ) Δ ⟨$⟩ x₁ ]
+          ≈⟨ S.sb-lam ⟩
+            S.Λ (S.𝒵 (Comma⇒.h f) S.[ S.↑[ NaturalTransformation.η (CommaObj.f Γ) Δ ⟨$⟩ x₁ ] ])
+          ≈⟨ {!!} ⟩
+            S.Λ (S.𝒵 (𝔮B.η (Δ · A) ⟨$⟩ (
+              NaturalTransformation.η (Comma⇒.g f) (Δ · A) ⟨$⟩
+                ( Functor.F₁ (CommaObj.α Γ) (ω₁ 𝕎.id) ⟨$⟩ x₂
+                , ↓₀-η A (Δ · A) (𝓋 𝓏)
+                )
+            )))
+          ∎)
+          where open Reasoning S.C.setoid
+                module 𝔮B = NaturalTransformation (𝔮 (𝟙 · B))
+
+        eval-commute : ∀ {A B Γ x₁ x₂} → Setoid._≈_ (Functor.₀ (CommaObj.α (⊤′ ·′ A ⇒ B ·′ A)) Γ) x₁ x₂ → _
         eval-commute {A} {B} {Γ} {(_ , f₁) , x₁} {(_ , f₂) , x₂} ((_ , f₁≈f₂) , x₁≈x₂) = S.∷-congᵣ (begin
             (S.p S.𝓏 S.⦅ S.𝓏 ⦆) S.[ α.η Γ ⟨$⟩ ((_ , f₁) , x₁) ]
           ≈⟨ S.sb-app ⟩
