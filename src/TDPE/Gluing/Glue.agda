@@ -41,6 +41,8 @@ module Tm = Functor Tm
 Gl : Category (suc a) a a
 Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
 
+module Gl = Category Gl
+
 𝓡₀ : 𝒰ᵀ → Psh.Obj
 𝓡₀ A = ⟦ A ⟧ᵀ (λ A₀ → 𝔑𝔣₀ ` A₀ `) Psh._^′_
 
@@ -396,20 +398,44 @@ yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↑ Δ Psh.∘ ↓ Δ Psh.≈ 𝔦′ Δ
 yoga {Δ = 𝟙}     Repr.!       = S.!η
 yoga {Δ = Δ · A} (γ Repr.∷ a) = S.∷-cong₂ (yoga γ) (S.𝒵-cong (yoga₀ a))
 
+⊤′ : Gl.Obj
+⊤′ = record
+  { α = 𝓡 𝟙
+  ; β = 𝟙
+  ; f = ntHelper (record
+    { η = λ X → record
+      { _⟨$⟩_ = λ _ → S.!
+      ; cong = λ _ → S.!η
+      }
+    ; commute = λ _ _ → S.!η
+    })
+  }
+
+infixl 6 _·′_
+
+_·′_ : Gl.Obj → 𝒰ᵀ → Gl.Obj
+Γ ·′ A = record
+  { α = CommaObj.α Γ Psh.·′ 𝓡₀ A
+  ; β = CommaObj.β Γ · A
+  ; f = ntHelper (record
+    { η = λ X → record
+      { _⟨$⟩_ = λ x →
+        (NaturalTransformation.η (CommaObj.f Γ) X ⟨$⟩ proj₁ x)
+          S.∷ S.𝒵 (NaturalTransformation.η (𝔮 (𝟙 · A)) X ⟨$⟩ (tt , proj₂ x))
+      ; cong = λ x≈y →
+        S.∷-cong₂ (cong (NaturalTransformation.η (CommaObj.f Γ) X) (proj₁ x≈y))
+                  (S.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
+      }
+    ; commute = λ f → λ { {γ₁ , a₁} {γ₂ , a₂} (γ₁≈γ₂ , a₁≈a₂) →
+      S.∷-cong₂ (S.S.trans (S.S.trans (NaturalTransformation.commute (CommaObj.f Γ) f γ₁≈γ₂) S.∘-identityˡ ) (S.S.sym S.πβ′))
+        (S.C.trans (S.C.trans (S.𝒵-cong (NaturalTransformation.commute (𝔮 (𝟙 · A)) f (tt , a₁≈a₂))) S.v𝓏) (S.C.sym S.v𝓏)) }
+    })
+  }
+
 CC : ContextualCartesian Gl 𝒰ᵀ
 CC = record
   { terminal = record
-    { ⊤ = record
-      { α = 𝓡 𝟙
-      ; β = 𝟙
-      ; f = ntHelper (record
-        { η = λ X → record
-          { _⟨$⟩_ = λ _ → S.!
-          ; cong = λ _ → S.!η
-          }
-        ; commute = λ _ _ → S.!η
-        })
-      }
+    { ⊤ = ⊤′
     ; ⊤-is-terminal = record
       { ! = record
         { g = Psh.!
@@ -419,23 +445,7 @@ CC = record
       ; !-unique = λ f → Psh.!-unique (Comma⇒.g f) , S.S.sym S.!η
       }
     }
-  ; _·_ = λ Γ A → record
-    { α = CommaObj.α Γ Psh.·′ 𝓡₀ A
-    ; β = CommaObj.β Γ · A
-    ; f = ntHelper (record
-      { η = λ X → record
-        { _⟨$⟩_ = λ x →
-          (NaturalTransformation.η (CommaObj.f Γ) X ⟨$⟩ proj₁ x)
-            S.∷ S.𝒵 (NaturalTransformation.η (𝔮 (𝟙 · A)) X ⟨$⟩ (tt , proj₂ x))
-        ; cong = λ x≈y →
-          S.∷-cong₂ (cong (NaturalTransformation.η (CommaObj.f Γ) X) (proj₁ x≈y))
-                    (S.𝒵-cong (cong (NaturalTransformation.η (𝔮 (𝟙 · A)) X) (tt , proj₂ x≈y)))
-        }
-      ; commute = λ f → λ { {γ₁ , a₁} {γ₂ , a₂} (γ₁≈γ₂ , a₁≈a₂) →
-        S.∷-cong₂ (S.S.trans (S.S.trans (NaturalTransformation.commute (CommaObj.f Γ) f γ₁≈γ₂) S.∘-identityˡ ) (S.S.sym S.πβ′))
-          (S.C.trans (S.C.trans (S.𝒵-cong (NaturalTransformation.commute (𝔮 (𝟙 · A)) f (tt , a₁≈a₂))) S.v𝓏) (S.C.sym S.v𝓏)) }
-      })
-    }
+  ; _·_ = _·′_
   ; π = λ {Δ} → record
     { g = Psh.π
     ; h = S.π S.id
@@ -472,7 +482,44 @@ CC = record
     }
   }
 
-{-
 CCC : ContextualCartesianClosed Gl 𝒰
-CCC = {!!}
--}
+CCC = record
+  { cartesian = CC
+  ; Λ = λ f → record
+    { g = Psh.Λ (Comma⇒.g f)
+    ; h = S.! S.∷ S.Λ (S.𝒵 (Comma⇒.h f))
+    ; commute = λ x → {!!}
+    }
+  ; eval = λ {A} {B} → record
+    { g = Psh.eval
+    ; h = ContextualCartesianClosed.eval S.CCC
+    ; commute = λ {Γ} {x₁} {x₂} x₁≈x₂ → eval-commute {A} {B} {Γ} {x₁} {x₂} x₁≈x₂
+    }
+  ; β = λ {Γ} {A} {B} f →
+    ( ContextualCartesianClosed.β (Psh.CCC λ A₀ → 𝔑𝔣₀ ` A₀ `) {CommaObj.α Γ} {A} {B} (Comma⇒.g f)
+    , ContextualCartesianClosed.β S.CCC (Comma⇒.h f)
+    )
+  ; unique = λ {Γ} {A} {B} {g} {h} x →
+    ( ContextualCartesianClosed.unique (Psh.CCC λ A₀ → 𝔑𝔣₀ ` A₀ `)
+        {CommaObj.α Γ} {A} {B} {Comma⇒.g g} {Comma⇒.g h} (proj₁ x)
+    , ContextualCartesianClosed.unique S.CCC (proj₂ x)
+    )
+  }
+  where eval-commute : ∀ {A B Γ x₁ x₂} → Setoid._≈_ (Functor.₀ (CommaObj.α (⊤′ ·′ A ⇒ B ·′ A)) Γ) x₁ x₂ → _
+        eval-commute {A} {B} {Γ} {(_ , f₁) , x₁} {(_ , f₂) , x₂} ((_ , f₁≈f₂) , x₁≈x₂) = S.∷-congᵣ (begin
+            (S.p S.𝓏 S.⦅ S.𝓏 ⦆) S.[ α.η Γ ⟨$⟩ ((_ , f₁) , x₁) ]
+          ≈⟨ S.sb-app ⟩
+            (S.p S.𝓏  S.[ α.η Γ ⟨$⟩ ((_ , f₁) , x₁) ]) S.⦅ S.𝓏 S.[ α.η Γ ⟨$⟩ ((_ , f₁) , x₁) ] ⦆
+          ≈⟨ S.app-cong₂ (S.C.trans S.vp S.v𝓏) S.v𝓏 ⟩
+            (S.Λ (S.𝒵 (𝔮B.η (Γ · A) ⟨$⟩ (f₁.η (Γ · A) ⟨$⟩ (↓₀-η A (Γ · A) (𝓋 𝓏) , ω₁ 𝕎.id)))) S.⦅ S.𝒵 (𝔮A.η Γ ⟨$⟩ (tt , x₁)) ⦆)
+          ≈⟨ S.Λβ ⟩
+            S.𝒵 (𝔮B.η (Γ · A) ⟨$⟩ (f₁.η (Γ · A) ⟨$⟩ (↓₀-η A (Γ · A) (𝓋 𝓏) , ω₁ 𝕎.id))) S.[ S.id S.∷ S.𝒵 (𝔮A.η Γ ⟨$⟩ (tt , x₁)) ]
+          ≈⟨ {!!} ⟩
+            S.𝒵 (𝔮B.η Γ ⟨$⟩ (f₂.η Γ ⟨$⟩ (x₂ , 𝕎.id)))
+          ∎)
+          where open Reasoning S.C.setoid
+                module 𝔮A = NaturalTransformation (𝔮 (𝟙 · A))
+                module 𝔮B = NaturalTransformation (𝔮 (𝟙 · B))
+                module f₁ = NaturalTransformation f₁
+                module f₂ = NaturalTransformation f₂
+                module α = NaturalTransformation (CommaObj.f (⊤′ ·′ A ⇒ B ·′ A))
