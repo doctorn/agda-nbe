@@ -9,7 +9,8 @@ import TDPE.Gluing.Categories.Category.Instance.Presheaves
 import TDPE.Gluing.Categories.Category.Instance.Setoids
 import TDPE.Gluing.Categories.Functor.Properties
 import TDPE.Gluing.Contexts
-import TDPE.Gluing.Glue
+import TDPE.Gluing.Glue.Base
+import TDPE.Gluing.Glue.Relation
 import TDPE.Gluing.Interpretation
 import TDPE.Gluing.Representation
 import TDPE.Gluing.Syntax
