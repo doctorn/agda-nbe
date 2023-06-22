@@ -39,14 +39,14 @@ module 𝒞 = Category 𝒞
   ; F-resp-≈ = λ _ _ → tt
   }
 
-! : ∀ {X} → X ⇒ ⊤
+! : ∀ {P} → P ⇒ ⊤
 ! = record
   { η = λ _ → S.!
   ; commute = λ _ _ → tt
   ; sym-commute = λ _ _ → tt
   }
 
-!-unique : ∀ {X} (h : X ⇒ ⊤) → h ≈ !
+!-unique : ∀ {P} (h : P ⇒ ⊤) → h ≈ !
 !-unique _ _ = tt
 
 infixl 6 _×_
@@ -64,14 +64,14 @@ _×_ : Obj → Obj → Obj
 
 unit : ∀ {A} → A ⇒ ⊤ × A
 unit {A} = ntHelper (record
-  { η = λ X → S.unit
+  { η = λ c → S.unit
   ; commute = λ f x → tt , cong (A.₁ f) x
   })
   where module A = Functor A
 
 counit : ∀ {A} → ⊤ × A ⇒ A
 counit {A} = ntHelper (record
-  { η = λ X → S.counit
+  { η = λ c → S.counit
   ; commute = λ f x → cong (A.₁ f) (proj₂ x)
   })
   where module A = Functor A
@@ -106,11 +106,11 @@ fmap f = unit ∘ f ∘ counit
 module 𝕪 = Functor (Yoneda.embed 𝒞)
 
 Env : Obj → 𝒞.Obj → Obj
-Env P X = P × 𝕪.₀ X
+Env P c = P × 𝕪.₀ c
 
 _^_ : Obj → Obj → Obj
 P ^ Q = record
-  { F₀ = λ X → hom-setoid {A = Env P X} {B = Q}
+  { F₀ = λ c → hom-setoid {A = Env P c} {B = Q}
   ; F₁ = λ f → record
     { _⟨$⟩_ = λ α → α ∘ ⟨ π , 𝕪.₁ f ∘ 𝓏 ⟩
     ; cong = λ α≈β x≈y → α≈β (proj₁ x≈y , 𝒞.∘-resp-≈ʳ (proj₂ x≈y))
@@ -256,13 +256,7 @@ module _ {a} {𝒰 : Set a} (ι : 𝒰 → Obj) where
     { cartesian = CC
     ; Λ = λ {Γ} {A} {B} f → Λ′ {Γ} {⟦ A ⟧} {⟦ B ⟧} f
     ; eval = λ {A} {B} → eval′ {⟦ A ⟧} {⟦ B ⟧}
-    ; β =  λ {Γ} {A} {B} f x →
-      cong (NaturalTransformation.η f _)
-        (Setoid.trans ( Functor.F₀ (Γ × ⟦ A ⟧) _) ((Functor.identity Γ (Setoid.refl (Functor.F₀ Γ _)))
-                      , (Setoid.refl (Functor.F₀ ⟦ A ⟧ _))
-                      )
-                      x
-        )
+    ; β = λ {Γ} {A} {B} f → β {Γ} {⟦ A ⟧} {⟦ B ⟧} f
     ; unique = λ {Γ} {A} {B} {g} {h} → unique {Γ} {⟦ A ⟧} {⟦ B ⟧} {g} {h}
     }
     where Λ′ : ∀ {Γ A B} → Γ × A ⇒ ⊤ × B → Γ ⇒ ⊤ × A ^ B
@@ -271,32 +265,38 @@ module _ {a} {𝒰 : Set a} (ι : 𝒰 → Obj) where
           eval′ : ∀ {A B} → ⊤ × (A ^ B) × A ⇒ ⊤ × B
           eval′ = unit ∘ eval ∘ ⟨ 𝓏 ∘ π , 𝓏 ⟩
 
+          β : ∀ {Γ A B} (f : Γ × A ⇒ ⊤ × B) → eval′ ∘ ⟨ Λ′ f ∘ π , 𝓏 ⟩ ≈ f
+          β {Γ} {A} {B} f x =
+            cong (f.η _) (Setoid.trans (Γ×A.₀ _) (Γ.identity (Setoid.refl (Γ.₀ _)) , Setoid.refl (A.₀ _)) x)
+            where module Γ = Functor Γ
+                  module Γ×A = Functor (Γ × A)
+                  module A = Functor A
+                  module f = NaturalTransformation f
+
           unique : ∀ {Γ A B} {g : Γ × A ⇒ ⊤ × B} {h : Γ ⇒ ⊤ × A ^ B}
                    → eval′ ∘ ⟨ h ∘ π , 𝓏 ⟩ ≈ g
                    → h ≈ Λ′ g
-          unique {Γ} {A} {B} {g} {h} ϵ⟨hπ,𝓏⟩≈g {X} {θ} {θ′} θ≈θ′ = tt , I
-            where module Γ = Functor Γ
-                  module A^B = Functor (A ^ B)
-                  module ⊤×A^B = Functor (⊤ × A ^ B)
-                  module A = Functor A
-                  module B = Functor B
-
+          unique {Γ} {A} {B} {g} {h} ϵ⟨hπ,𝓏⟩≈g {c} {θ} {θ′} θ≈θ′ = tt , I
+            where module A^B = Functor (A ^ B)
                   module h = NaturalTransformation h
                   module Λg = NaturalTransformation (Λ′ g)
 
-                  I : Setoid._≈_ (A^B.₀ X) (proj₂ (h.η X ⟨$⟩ θ)) (proj₂ (Λg.η X ⟨$⟩ θ′))
-                  I {Y} {x₁ , y₁} {x₂ , y₂} (x₁≈x₂ , y₁≈y₂) = begin
-                      NaturalTransformation.η (proj₂ (h.η X ⟨$⟩ θ)) Y ⟨$⟩ (x₁ , y₁)
-                    ≈⟨
-                      cong (NaturalTransformation.η (proj₂ (h.η X ⟨$⟩ θ)) Y)
-                           (Setoid.refl (A.₀ Y) , 𝒞.Equiv.sym 𝒞.identityʳ)
-                    ⟩
-                      NaturalTransformation.η (proj₂ (h.η X ⟨$⟩ θ)) Y ⟨$⟩ (x₁ , y₁ 𝒞.∘ 𝒞.id)
-                    ≡⟨⟩
-                      NaturalTransformation.η (proj₂ (⊤×A^B.₁ y₁ ⟨$⟩ (h.η X ⟨$⟩ θ))) Y ⟨$⟩ (x₁ , 𝒞.id)
-                    ≈⟨ proj₂ (h.sym-commute y₁ (Setoid.refl (Γ.₀ X))) (Setoid.refl (A.₀ Y) , 𝒞.Equiv.refl) ⟩
-                      NaturalTransformation.η (proj₂ (h.η Y ⟨$⟩ (Γ.₁ y₁ ⟨$⟩ θ))) Y ⟨$⟩ (x₁ , 𝒞.id)
-                    ≈⟨ proj₂ (ϵ⟨hπ,𝓏⟩≈g ((Γ.F-resp-≈ y₁≈y₂ θ≈θ′) , x₁≈x₂)) ⟩
-                      proj₂ (NaturalTransformation.η g Y ⟨$⟩ (Γ.₁ y₂ ⟨$⟩ θ′ , x₂))
+                  I : Setoid._≈_ (A^B.₀ c) (proj₂ (h.η c ⟨$⟩ θ)) (proj₂ (Λg.η c ⟨$⟩ θ′))
+                  I {d} {x₁ , y₁} {x₂ , y₂} (x₁≈x₂ , y₁≈y₂) = begin
+                      πhcθ.η d ⟨$⟩ (x₁ , y₁)
+                    ≈⟨ cong (πhcθ.η d) (Setoid.refl (A.₀ d) , 𝒞.Equiv.sym 𝒞.identityʳ) ⟩
+                      πhcθ.η d ⟨$⟩ (x₁ , y₁ 𝒞.∘ 𝒞.id)
+                    ≈⟨ proj₂ (h.sym-commute y₁ (Setoid.refl (Γ.₀ c))) (Setoid.refl (A.₀ d) , 𝒞.Equiv.refl) ⟩
+                      πhdΓyθ.η d ⟨$⟩ (x₁ , 𝒞.id)
+                    ≈⟨ proj₂ (ϵ⟨hπ,𝓏⟩≈g (Γ.F-resp-≈ y₁≈y₂ θ≈θ′ , x₁≈x₂)) ⟩
+                      proj₂ (g.η d ⟨$⟩ (Γ.₁ y₂ ⟨$⟩ θ′ , x₂))
                     ∎
-                    where open Reasoning (B.₀ Y)
+                    where module A = Functor A
+                          module B = Functor B
+                          module Γ = Functor Γ
+                          module ⊤×A^B = Functor (⊤ × A ^ B)
+                          module πhcθ = NaturalTransformation (proj₂ (h.η c ⟨$⟩ θ))
+                          module πhdΓyθ = NaturalTransformation (proj₂ (h.η d ⟨$⟩ (Γ.₁ y₁ ⟨$⟩ θ)))
+                          module g = NaturalTransformation g
+
+                          open Reasoning (B.₀ d)
