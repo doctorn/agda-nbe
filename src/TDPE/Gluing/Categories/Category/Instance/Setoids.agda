@@ -48,7 +48,7 @@ infixl 6 _×_
 _×_ : Obj → Obj → Obj
 Γ × A = ×-setoid Γ A
 
-_⊗_ : ∀ {A B C} → (f : A ⇒ C) → (g : B ⇒ C) → Pullback f g
+_⊗_ : ∀ {A B C} (f : A ⇒ C) (g : B ⇒ C) → Pullback f g
 _⊗_ {A} {B} {C} f g = record
   { P = Σ-setoid (A × B) (record
     { Carrier = λ { (a , b) → f ⟨$⟩ a C.≈ g ⟨$⟩ b }

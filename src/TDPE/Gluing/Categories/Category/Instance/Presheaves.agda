@@ -14,12 +14,15 @@ import Relation.Binary.Reasoning.Setoid as Reasoning
 
 open import Data.Unit.Polymorphic as Unit using (tt)
 open import Data.Product using (_,_; proj₁; proj₂)
+open import Data.Product.Relation.Binary.Pointwise.Dependent
+  using (_,_; proj₁; proj₂)
 
 open import Categories.Functor using (Functor)
 open import Categories.NaturalTransformation using (NaturalTransformation; ntHelper)
 open import Categories.Yoneda
 open import Categories.Category.Instance.Setoids using (Setoids)
 open import Categories.Category.Construction.Presheaves using (Presheaves)
+open import Categories.Diagram.Pullback using (IsPullback; Pullback)
 
 Psh = Presheaves {o′ = ℓ} {ℓ′ = ℓ} 𝒞
 
@@ -61,6 +64,172 @@ _×_ : Obj → Obj → Obj
  }
  where module Γ = Functor Γ
        module A = Functor A
+
+_⊗_ : ∀ {P Q R} (α : P ⇒ R) (β : Q ⇒ R) → Pullback Psh α β
+_⊗_ {P} {Q} {R} α β = record { isPullback = isPullback S._⊗_ }
+  where module P = Functor P
+        module Q = Functor Q
+        module R = Functor R
+        module α = NaturalTransformation α
+        module β = NaturalTransformation β
+
+        -- NOTE(@doctorn) don't use chosen pullbacks as Agda will try and compute too much
+        module _ (_⊗₀_ : ∀ {A B C : S.Obj} (f : A S.⇒ C) (g : B S.⇒ C) → Pullback (Setoids ℓ ℓ) f g) where
+
+          module _ c where
+            module P⊗Q = Pullback (α.η c ⊗₀ β.η c)
+
+          P⊗Q₀ : 𝒞.Obj → S.Obj
+          P⊗Q₀ c = P⊗Q.P c
+
+          commute : ∀ {d c} (f : c 𝒞.⇒ d)
+                    → α.η c S.∘ P.₁ f S.∘ P⊗Q.p₁ d S.≈ β.η c S.∘ Q.₁ f S.∘ P⊗Q.p₂ d
+          commute {d} {c} f = begin
+              (α.η c S.∘ P.₁ f) S.∘ P⊗Q.p₁ d
+            ≈⟨ S.∘-resp-≈ˡ {f = α.η c S.∘ P.₁ f} {h = R.₁ f S.∘ α.η d} {g = P⊗Q.p₁ d} (α.commute f) ⟩
+              (R.₁ f S.∘ α.η d) S.∘ P⊗Q.p₁ d
+            ≈⟨ S.sym-assoc {f = P⊗Q.p₁ d} {g = α.η d} {h = R.₁ f} ⟩
+              R.₁ f S.∘ (α.η d S.∘ P⊗Q.p₁ d)
+            ≈⟨ S.∘-resp-≈ʳ {f = α.η d S.∘ P⊗Q.p₁ d} {h = β.η d S.∘ P⊗Q.p₂ d} {g = R.₁ f} (P⊗Q.commute d) ⟩
+              R.₁ f S.∘ (β.η d S.∘ P⊗Q.p₂ d)
+            ≈⟨ S.assoc {f = P⊗Q.p₂ d} {g = β.η d} {h = R.₁ f} ⟩
+              (R.₁ f S.∘ β.η d) S.∘ P⊗Q.p₂ d
+            ≈⟨ S.∘-resp-≈ˡ {f = R.₁ f S.∘ β.η d} {h = β.η c S.∘ Q.₁ f} {g = P⊗Q.p₂ d} (β.sym-commute f) ⟩
+              (β.η c S.∘ Q.₁ f) S.∘ P⊗Q.p₂ d
+            ∎
+            where open S.HomReasoning {P⊗Q.P d} {R.₀ c}
+
+          P⊗Q₁ : ∀ {d c} (f : c 𝒞.⇒ d) → P⊗Q₀ d S.⇒ P⊗Q₀ c
+          P⊗Q₁ {d} {c} f = P⊗Q.universal c {h₁ = P.₁ f S.∘ P⊗Q.p₁ d} {h₂ = Q.₁ f S.∘ P⊗Q.p₂ d} (commute f)
+
+          identity : ∀ {c} → P⊗Q₁ (𝒞.id {c}) S.≈ S.id {P⊗Q₀ c}
+          identity {c} {x} {y} p =
+            P⊗Qc.sym (P⊗Q.unique c
+              {i = S.id}
+              (λ p → Pc.sym (Pc.trans (P.identity Pc.refl) (cong (P⊗Q.p₁ c) (P⊗Qc.sym p))))
+              (λ p → Qc.sym (Qc.trans (Q.identity Qc.refl) (cong (P⊗Q.p₂ c) (P⊗Qc.sym p))))
+              (P⊗Qc.sym p))
+            where module P⊗Qc = Setoid (P⊗Q₀ c)
+                  module Pc = Setoid (P.₀ c)
+                  module Qc = Setoid (Q.₀ c)
+
+          homomorphism : ∀ {c d e} {f : d 𝒞.⇒ c} {g : e 𝒞.⇒ d} → P⊗Q₁ (f 𝒞.∘ g) S.≈ P⊗Q₁ g S.∘ P⊗Q₁ f
+          homomorphism {c} {d} {e} {f} {g} {x} {y} p =
+            P⊗Qe.sym (P⊗Q.unique e
+              {i = P⊗Q₁ g S.∘ P⊗Q₁ f}
+              (λ p → Pe.sym (Pe.trans
+                (P.homomorphism Pc.refl)
+                (Pe.trans
+                  (cong (P.₁ g) (Pd.sym (P⊗Q.p₁∘universal≈h₁ d p)))
+                  (Pe.sym (P⊗Q.p₁∘universal≈h₁ e (cong (P⊗Q₁ f) P⊗Qc.refl))))))
+              (λ p → Qe.sym (Qe.trans
+                (Q.homomorphism Qc.refl)
+                (Qe.trans (cong (Q.₁ g)
+                  (Qd.sym (P⊗Q.p₂∘universal≈h₂ d p)))
+                  (Qe.sym (P⊗Q.p₂∘universal≈h₂ e (cong (P⊗Q₁ f) P⊗Qc.refl))))))
+              (P⊗Qc.sym p))
+            where module P⊗Qc = Setoid (P⊗Q₀ c)
+                  module P⊗Qe = Setoid (P⊗Q₀ e)
+                  module Pc = Setoid (P.₀ c)
+                  module Pd = Setoid (P.₀ d)
+                  module Pe = Setoid (P.₀ e)
+                  module Qc = Setoid (Q.₀ c)
+                  module Qd = Setoid (Q.₀ d)
+                  module Qe = Setoid (Q.₀ e)
+
+          P⊗Q-resp-≈ : ∀ {c d} {f i : d 𝒞.⇒ c} → f 𝒞.≈ i → P⊗Q₁ f S.≈ P⊗Q₁ i
+          P⊗Q-resp-≈ {c} {d} {f} {i} f≈i =
+            P⊗Q.universal-resp-≈ d
+              {h₁ = P.₁ f S.∘ P⊗Q.p₁ c} {h₂ = Q.₁ f S.∘ P⊗Q.p₂ c}
+              {i₁ = P.₁ i S.∘ P⊗Q.p₁ c} {i₂ = Q.₁ i S.∘ P⊗Q.p₂ c}
+              {eq = commute f} {eq′ = commute i}
+              (S.∘-resp-≈ˡ {f = P.₁ f} {h = P.₁ i} {g = P⊗Q.p₁ c} (P.F-resp-≈ f≈i))
+              (S.∘-resp-≈ˡ {f = Q.₁ f} {h = Q.₁ i} {g = P⊗Q.p₂ c} (Q.F-resp-≈ f≈i))
+
+          α⊗β : Obj
+          α⊗β = record
+            { F₀ = P⊗Q₀
+            ; F₁ = P⊗Q₁
+            ; identity = identity
+            ; homomorphism = homomorphism
+            ; F-resp-≈ = P⊗Q-resp-≈
+            }
+
+          p₁ : α⊗β ⇒ P
+          p₁ = ntHelper (record
+            { η = λ c → P⊗Q.p₁ c
+            ; commute = λ {_} {d} f p → P⊗Q.p₁∘universal≈h₁ d p
+            })
+
+          p₂ : α⊗β ⇒ Q
+          p₂ = ntHelper (record
+            { η = λ c → P⊗Q.p₂ c
+            ; commute = λ {_} {d} f p → P⊗Q.p₂∘universal≈h₂ d p
+            })
+
+          module p₁ = NaturalTransformation p₁
+          module p₂ = NaturalTransformation p₂
+
+          universal-η : ∀ {A} {h₁ : A ⇒ P} {h₂ : A ⇒ Q} → α ∘ h₁ ≈ β ∘ h₂ → ∀ c → Functor.₀ A c S.⇒ P⊗Q₀ c
+          universal-η {A} {h₁} {h₂} eq c =
+            P⊗Q.universal c {h₁ = NaturalTransformation.η h₁ c} {h₂ = NaturalTransformation.η h₂ c} (eq {c})
+
+          universal-commute : ∀ {A} {h₁ : A ⇒ P} {h₂ : A ⇒ Q} {eq : α ∘ h₁ ≈ β ∘ h₂}
+                              → ∀ {c d} (f : c 𝒞.⇒ d)
+                              → universal-η {A} {h₁} {h₂} eq c S.∘ Functor.₁ A f
+                                  S.≈ P⊗Q₁ f S.∘ universal-η {A} {h₁} {h₂} eq d
+          universal-commute {A} {h₁} {h₂} {eq} {c} {d} f {x} {y} p = begin
+              universal-η {A} {h₁} {h₂} eq c ⟨$⟩ (A.₁ f ⟨$⟩ x)
+            ≈⟨
+              P⊗Q.unique c
+                {i = universal-η {A} {h₁} {h₂} eq c S.∘ A.₁ f}
+                (λ p → Pc.trans (P⊗Q.p₁∘universal≈h₁ c (Setoid.refl (A.₀ c))) (h₁.commute f p))
+                (λ p → Qc.trans (P⊗Q.p₂∘universal≈h₂ c (Setoid.refl (A.₀ c))) (h₂.commute f p))
+                p
+            ⟩
+              P⊗Q.universal c
+                {h₁ = P.₁ f S.∘ h₁.η d}
+                {h₂ = Q.₁ f S.∘ h₂.η d}
+                (λ p → Rc.trans (α.commute f Pd.refl) (Rc.trans (cong (R.₁ f) (eq p)) (β.sym-commute f Qd.refl)))
+              ⟨$⟩ y
+            ≈⟨
+              Setoid.sym (P⊗Q₀ c) (P⊗Q.unique c
+                {i = P⊗Q₁ f S.∘ universal-η {A} {h₁} {h₂} eq d}
+                (λ p → Pc.trans (p₁.commute f (Setoid.refl (P⊗Q₀ d))) (cong (P.₁ f) (P⊗Q.p₁∘universal≈h₁ d p)))
+                (λ p → Qc.trans (p₂.commute f (Setoid.refl (P⊗Q₀ d))) (cong (Q.₁ f) (P⊗Q.p₂∘universal≈h₂ d p)))
+                (Setoid.refl (A.₀ d)))
+            ⟩
+               P⊗Q₁ f ⟨$⟩ (universal-η {A} {h₁} {h₂} eq d ⟨$⟩ y)
+            ∎
+            where open Reasoning (P⊗Q₀ c)
+                  module h₁ = NaturalTransformation h₁
+                  module h₂ = NaturalTransformation h₂
+                  module A = Functor A
+                  module Pc = Setoid (P.₀ c)
+                  module Pd = Setoid (P.₀ d)
+                  module Qc = Setoid (Q.₀ c)
+                  module Qd = Setoid (Q.₀ d)
+                  module Rc = Setoid (R.₀ c)
+
+          isPullback : IsPullback Psh p₁ p₂ α β
+          isPullback = record
+            { commute = λ {c} p → P⊗Q.commute c p
+            ; universal = λ {A} {h₁} {h₂} eq → ntHelper (record
+              { η = universal-η {A} {h₁} {h₂} eq
+              ; commute = λ {c} {d} f p → universal-commute {A} {h₁} {h₂} {eq} f p
+              })
+            ; unique = λ {A} {h₁} {h₂} {i} {eq} p₁∘i≈h₁ p₂∘i≈h₂ {c} p →
+               P⊗Q.unique c
+                 {h₁ = NaturalTransformation.η h₁ c}
+                 {h₂ = NaturalTransformation.η h₂ c}
+                 {i = NaturalTransformation.η i c}
+                 {eq {c}}
+                 (p₁∘i≈h₁ {c})
+                 (p₂∘i≈h₂ {c})
+                 p
+            ; p₁∘universal≈h₁ = λ {_} {_} {_} {_} {c} p → P⊗Q.p₁∘universal≈h₁ c p
+            ; p₂∘universal≈h₂ = λ {_} {_} {_} {_} {c} p → P⊗Q.p₂∘universal≈h₂ c p
+            }
 
 unit : ∀ {A} → A ⇒ ⊤ × A
 unit {A} = ntHelper (record
