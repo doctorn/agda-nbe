@@ -13,9 +13,13 @@ open import Relation.Binary using (IsEquivalence)
 open import Data.Unit.Polymorphic as Unit using (tt)
 open import Data.Product using (_,_; proj₁; proj₂)
 open import Data.Product.Relation.Binary.Pointwise.NonDependent using (×-setoid)
+open import Data.Product.Relation.Binary.Pointwise.Dependent
+  using (_,_; proj₁; proj₂) renaming (setoid to Σ-setoid)
+
 
 open import Categories.Category.Core
 open import Categories.Category.Instance.Setoids public
+open import Categories.Diagram.Pullback (Setoids ℓ ℓ) using (Pullback)
 
 open import TDPE.Gluing.Categories.Category.ContextualCartesian (Setoids ℓ ℓ)
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed (Setoids ℓ ℓ)
@@ -43,6 +47,28 @@ infixl 6 _×_
 
 _×_ : Obj → Obj → Obj
 Γ × A = ×-setoid Γ A
+
+_⊗_ : ∀ {A B C} → (f : A ⇒ C) → (g : B ⇒ C) → Pullback f g
+_⊗_ {A} {B} {C} f g = record
+  { P = Σ-setoid (A × B) (record
+    { Carrier = λ { (a , b) → f ⟨$⟩ a C.≈ g ⟨$⟩ b }
+    ; _≈_ = λ _ _ → Unit.⊤ {ℓ}
+    ; isEquivalence = record { refl = tt ; sym = λ _ → tt ; trans = λ _ _ → tt }
+    })
+  ; p₁ = record { _⟨$⟩_ = λ { ((a , _) , _) → a } ; cong = λ x → proj₁ (proj₁ x) }
+  ; p₂ = record { _⟨$⟩_ = λ { ((_ , b) , _) → b } ; cong = λ x → proj₂ (proj₁ x) }
+  ; isPullback = record
+    { commute = λ { {(a₁ , b₁) , p} {(a₂ , b₂) , _} ((a₁≈a₂ , b₁≈b₂) , _) → C.trans p (cong g b₁≈b₂) }
+    ; universal = λ {H} {h₁} {h₂} p → record
+      { _⟨$⟩_ = λ x → (h₁ ⟨$⟩ x , h₂ ⟨$⟩ x) , p (Setoid.refl H)
+      ; cong = λ x → (cong h₁ x , cong h₂ x) , tt
+      }
+    ; unique = λ {H} {h₁} {h₂} {i} {fh₁≈gh₂} p₁i≈h₁ p₂i≈h₂ p → (p₁i≈h₁ p , p₂i≈h₂ p) , tt
+    ; p₁∘universal≈h₁ = λ {_} {h₁} x → cong h₁ x
+    ; p₂∘universal≈h₂ = λ {_} {_} {h₂} x → cong h₂ x
+    }
+  }
+  where module C = Setoid C
 
 unit : ∀ {A} → A ⇒ ⊤ × A
 unit = record { _⟨$⟩_ = tt ,_ ; cong = tt ,_ }
