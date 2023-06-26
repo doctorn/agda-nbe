@@ -2,7 +2,7 @@
 
 module TDPE.Gluing.Glue.Relation {a} (𝒰 : Set a) where
 
-open import Function.Equality
+open import Function.Equality using (cong; _⟨$⟩_)
 
 open import Data.Unit.Polymorphic as Unit using (tt)
 open import Data.Product using (_,_; proj₁; proj₂)
@@ -13,6 +13,7 @@ open import Categories.Functor.Core using (Functor)
 open import Categories.NaturalTransformation using (ntHelper; NTHelper; NaturalTransformation)
 open import Categories.Category.Construction.Comma using (Comma; CommaObj; Comma⇒)
 
+import Relation.Binary.Reasoning.Setoid as Reasoning
 open import Relation.Binary using (Setoid)
 open import Relation.Binary.PropositionalEquality as PE using (_≡_)
 
@@ -56,17 +57,12 @@ module _ {A B} where
               }
             ; commute = λ g →
               λ { {f₁ , x₁} {f₂ , x₂} (f₁≈f₂ , x₁≈x₂) →
-                ∷-congᵣ (C.sym
-                  (C.trans v𝓏
-                    (C.trans
-                      (sb-congₗ
-                        (app-cong₂
-                          (𝒵-cong (S.sym f₁≈f₂))
-                          (𝒵-cong (S.sym x₁≈x₂))))
-                      (C.trans sb-app
-                        (app-cong₂
-                          (C.trans (sb-comp {γ = f₁}) (C.sym v𝒵))
-                          (C.trans (sb-comp {γ = x₁}) (C.sym v𝒵)))))))
+                ∷-congᵣ (C.sym (C.trans v𝓏 (C.trans
+                  (sb-congₗ (app-cong₂ (𝒵-cong (S.sym f₁≈f₂)) (𝒵-cong (S.sym x₁≈x₂))))
+                  (C.trans sb-app
+                    (app-cong₂
+                      (C.trans (sb-comp {γ = f₁}) (C.sym v𝒵))
+                      (C.trans (sb-comp {γ = x₁}) (C.sym v𝒵)))))))
               }
             })
 
@@ -148,10 +144,31 @@ private
     PE.cong R.Λ (cong (↓₀.η B (Δ · A)) (x (cong (↑₀.η A (Δ · A)) PE.refl , PE.refl)))
 
   ↑₀-commute ` A `   w x = PE.cong R.ι (PE.cong (R.+′ w) x)
-  ↑₀-commute (A ⇒ B) w x = {!!}
+  ↑₀-commute (A ⇒ B) w {x} PE.refl =
+    ( 𝔦₀′.commute (A ⇒ B) w (PE.refl {x = x})
+    , (λ { {Ξ} (y₁≈y₂ , PE.refl) →
+      cong (↑₀.η B Ξ) (PE.cong₂ R._⦅_⦆ (PE.sym (R.+′-homomorphism PE.refl)) (cong (↓₀.η A Ξ) y₁≈y₂)) })
+    )
+    , tt
 
-  ↓₀-commute ` A `   w x = {!!}
-  ↓₀-commute (A ⇒ B) w x = {!!}
+  ↓₀-commute ` A `   w x = cong (𝓡₀.₁ ` A ` w) x
+  ↓₀-commute (A ⇒ B) {Γ} {Δ} w {(_ , x₁) , _} {(_ , x₂) , _} ((_ , x₁≈x₂) , _) = PE.cong R.Λ (begin
+      ↓₀.η B (Δ · A) ⟨$⟩ (x₁.η (Δ · A) ⟨$⟩ (↑₀.η A (Δ · A) ⟨$⟩ R.𝓋 R.𝓏 , w 𝕎.∘ ω₁ ϵ))
+    ≡⟨ cong (↓₀.η B (Δ · A)) (cong (x₁.η (Δ · A)) (↑₀.commute A (ω₂ w) PE.refl , PE.refl)) ⟩
+      ↓₀.η B (Δ · A) ⟨$⟩ (x₁.η (Δ · A) ⟨$⟩ (𝓡₀.₁ A (ω₂ w) ⟨$⟩ (↑₀.η A (Γ · A) ⟨$⟩ R.𝓋 R.𝓏) , w 𝕎.∘ ω₁ ϵ))
+    ≡⟨ cong (↓₀.η B (Δ · A)) (x₁≈x₂ (Setoid.refl (𝓡₀.₀ A (Δ · A)) , PE.cong ω₁ I)) ⟩
+      ↓₀.η B (Δ · A) ⟨$⟩ (x₂.η (Δ · A) ⟨$⟩ (Functor.₁ (𝓡₀ A Psh.× Psh.𝕪.₀ Γ) (ω₂ w) ⟨$⟩ (↑₀.η A (Γ · A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ)))
+    ≡⟨ cong (↓₀.η B (Δ · A)) (x₂.commute (ω₂ w) (Setoid.refl (𝓡₀.₀ A (Γ · A)) , PE.refl)) ⟩
+      ↓₀.η B (Δ · A) ⟨$⟩ (𝓡₀.₁ B (ω₂ w) ⟨$⟩ (x₂.η (Γ · A) ⟨$⟩ (↑₀.η A (Γ · A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ)))
+    ≡⟨ ↓₀.commute B (ω₂ w) (Setoid.refl (𝓡₀.₀ B (Γ · A))) ⟩
+      R.+ (ω₂ w) (↓₀.η B (Γ · A) ⟨$⟩ (x₂.η (Γ · A) ⟨$⟩ (↑₀.η A (Γ · A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ)))
+    ∎)
+    where open PE.≡-Reasoning
+          module x₁ = NaturalTransformation x₁
+          module x₂ = NaturalTransformation x₂
+
+          I : w 𝕎.∘ ϵ ≡ ϵ 𝕎.∘ (ϵ 𝕎.∘ w)
+          I = PE.trans 𝕎.identityʳ (PE.trans (PE.sym 𝕎.identityˡ) (PE.sym 𝕎.identityˡ))
 
 ↑₀ A = ntHelper (record
   { η = λ Δ → record
@@ -169,8 +186,30 @@ private
   ; commute = ↓₀-commute A
   })
 
-yoga₀ {` A `} = {!!}
-yoga₀ {A ⇒ B} = {!!}
+yoga₀ {` A `}         PE.refl = S.refl
+yoga₀ {A ⇒ B} {Γ} {x} PE.refl =
+  S.trans
+    (∷-congᵣ (Λ-cong I))
+    (S.sym (ContextualCartesianClosed.η CCC (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x)))
+  where open Reasoning C.setoid
+
+        I = begin
+            𝒵 (𝔦₀.η B (Γ · A) ⟨$⟩ (↓₀.η B (Γ · A) ⟨$⟩ (↑₀.η B (Γ · A) ⟨$⟩ (R.+′ (ω₁ ϵ) x R.⦅ ↓₀.η A (Γ · A) ⟨$⟩ (↑₀.η A (Γ · A) ⟨$⟩ R.𝓋 R.𝓏) ⦆))))
+          ≈⟨ 𝒵-cong (yoga₀ PE.refl) ⟩
+            𝒵 (𝔦₀′.η B (Γ · A) ⟨$⟩ (R.+′ (ω₁ ϵ) x R.⦅ ↓₀.η A (Γ · A) ⟨$⟩ (↑₀.η A (Γ · A) ⟨$⟩ R.𝓋 R.𝓏) ⦆))
+          ≈⟨ app-congᵣ (𝒵-cong (yoga₀ PE.refl)) ⟩
+            𝒵 (𝔦₀′.η (A ⇒ B) (Γ · A) ⟨$⟩ (R.+′ (ω₁ ϵ) x)) ⦅ 𝓏 ⦆
+          ≈⟨ app-congₗ (𝒵-cong (𝔦₀′.commute (A ⇒ B) (ω₁ (ϵ {Γ})) {x = x} PE.refl)) ⟩
+            𝓏 [ (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x) ∘ (W.₁ (ϵ {Γ}) ∘ π id) ] ⦅ 𝓏 ⦆
+          ≈⟨ app-congₗ (sb-congᵣ (∘-congᵣ (∘-congₗ (W.identity {Γ})))) ⟩
+            𝓏 [ (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x) ∘ (id ∘ π id) ] ⦅ 𝓏 ⦆
+          ≈⟨ app-congₗ (sb-congᵣ (∘-congᵣ ∘-identityˡ)) ⟩
+            𝓏 [ (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x) ∘ π id ] ⦅ 𝓏 ⦆
+          ≈⟨ C.sym (app-cong₂ vp v𝓏) ⟩
+            (p 𝓏 [ _ ∷ 𝓏 ]) ⦅ 𝓏 [ _ ∷ 𝓏 ] ⦆
+          ≈⟨ C.sym sb-app ⟩
+            (p 𝓏 ⦅ 𝓏 ⦆) [ _ ∷ 𝓏 ]
+          ∎
 
 ⊤ : Gl.Obj
 ⊤ = record
@@ -185,6 +224,7 @@ yoga₀ {A ⇒ B} = {!!}
     })
   }
 
+{-
 infixl 6 _×_
 
 _×_ : Gl.Obj → 𝒰ᵀ → Gl.Obj
@@ -193,46 +233,9 @@ _×_ : Gl.Obj → 𝒰ᵀ → Gl.Obj
   ; β = CommaObj.β Γ · A
   ; f = {!!}
   }
+-}
 
 {-
-private
-  ↑₀-commute ` A `   w x = cong (𝓡₀.₁ ` A ` w) x
-  ↑₀-commute (A ⇒ B) {Γ} {Δ} w {x₁} {x₂} x₁≈x₂ = begin
-      Λ (↑₀-η B (Δ · A) (proj₂ (x₁.η (Δ · A) ⟨$⟩ (↓₀-η A (Δ · A) (𝓋 𝓏) , w 𝕎.∘ ω₁ 𝕎.id))))
-    ≡⟨ PE.cong Λ (↑₀-cong B (Δ · A) (proj₂ (cong (x₁.η (Δ · A)) (↓₀-commute A (ω₂ w) PE.refl , PE.refl)))) ⟩
-      Λ (↑₀-η B (Δ · A) (proj₂ (x₁.η (Δ · A) ⟨$⟩ (𝓡₀.₁ A (ω₂ w) ⟨$⟩ (↓₀-η A (Γ · A) (𝓋 𝓏)) , w 𝕎.∘ ω₁ 𝕎.id))))
-    ≡⟨ PE.cong Λ (↑₀-cong B (Δ · A) (proj₂ (x₁≈x₂ (Setoid.refl (𝓡₀.₀ A (Δ · A)) , PE.cong ω₁ I)))) ⟩
-      Λ (↑₀-η B (Δ · A) (proj₂ (x₂.η (Δ · A) ⟨$⟩ (Functor.₁ (𝓡₀ A Psh.·′ Psh.𝕪.₀ Γ) (ω₂ w) ⟨$⟩ (↓₀-η A (Γ · A) (𝓋 𝓏) , ω₁ 𝕎.id)))))
-    ≡⟨
-      PE.cong Λ
-        (↑₀-cong B (Δ · A) (NaturalTransformation.commute (Psh.↓ Psh.∘ x₂) (ω₂ w)
-          (Setoid.refl (𝓡₀.₀ A (Γ · A)) , PE.refl)))
-    ⟩
-      Λ (↑₀-η B (Δ · A) (𝓡₀.₁ B (ω₂ w) ⟨$⟩ (proj₂ (x₂.η (Γ · A) ⟨$⟩ (↓₀-η A (Γ · A) (𝓋 𝓏) , ω₁ 𝕎.id)))))
-    ≡⟨ PE.cong Λ (↑₀-commute B (ω₂ w) (Setoid.refl (𝓡₀.₀ B (Γ · A)))) ⟩
-      Λ (Repr.+ (ω₂ w) (↑₀-η B (Γ · A) (proj₂ (x₂.η (Γ · A) ⟨$⟩ (↓₀-η A (Γ · A) (𝓋 𝓏) , ω₁ 𝕎.id)))))
-    ≡⟨⟩
-      Repr.+ w (Λ (↑₀-η B (Γ · A) (proj₂ (x₂.η (Γ · A) ⟨$⟩ (↓₀-η A (Γ · A) (𝓋 𝓏) , ω₁ 𝕎.id)))))
-    ∎
-    where open PE.≡-Reasoning
-          module x₁ = NaturalTransformation x₁
-          module x₂ = NaturalTransformation x₂
-
-          I : w 𝕎.∘ 𝕎.id ≡ 𝕎.id 𝕎.∘ (𝕎.id 𝕎.∘ w)
-          I = begin
-              w 𝕎.∘ 𝕎.id
-            ≡⟨ 𝕎.identityʳ ⟩
-              w
-            ≡⟨ PE.sym 𝕎.identityˡ ⟩
-              𝕎.id 𝕎.∘ w
-            ≡⟨ PE.sym 𝕎.identityˡ ⟩
-              𝕎.id 𝕎.∘ (𝕎.id 𝕎.∘ w)
-            ∎
-
-  ↓₀-commute ` A `   w x = PE.cong ι (PE.cong (Repr.+′ w) x)
-  ↓₀-commute (A ⇒ B) w PE.refl {Ξ} (y₁≈y₂ , PE.refl) =
-    tt , ↓₀-cong B Ξ (PE.cong₂ _⦅_⦆ (PE.sym (Repr.+′-homomorphism PE.refl)) (↑₀-cong A Ξ y₁≈y₂))
-
 ↑ : ∀ Δ → 𝓡 Δ Psh.⇒ 𝔑𝔣 Δ
 ↑ 𝟙 = ntHelper (record
   { η = λ Γ → record
