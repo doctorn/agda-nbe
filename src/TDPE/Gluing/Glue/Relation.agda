@@ -316,7 +316,8 @@ CC = record
       , S.trans (∷-congᵣ v𝓏) 𝒵η
       )
     ; unique = λ {Δ} {h} {i} {j} x y →
-      ( ?
+      ( ContextualCartesian.Ext.unique (Psh.CC 𝓡₀)
+        {CommaObj.α Γ} {A} {CommaObj.α Δ} {Comma⇒.g h} {Comma⇒.g i} {Comma⇒.g j} (proj₁ x) (proj₁ y)
       , ContextualCartesian.Ext.unique Syntax.CC (proj₂ x) (S.trans (proj₂ y) (S.sym 𝒵η))
       )
     }
@@ -324,30 +325,32 @@ CC = record
 
 
 {-
-
 CCC : ContextualCartesianClosed Gl 𝒰
 CCC = record
   { cartesian = CC
   ; Λ = λ {Γ} {A} {B} f → record
-    { g = Psh.Λ (Comma⇒.g f)
-    ; h = S.! S.∷ S.Λ (S.𝒵 (Comma⇒.h f))
-    ; commute = λ {Δ} {x₁} {x₂} x₁≈x₂ → Λ-commute {Γ} {A} {B} f {Δ} {x₁} {x₂} x₁≈x₂
+    { g = {!!}
+    ; h = ! ∷ Λ (𝒵 (Comma⇒.h f))
+    ; commute = {!!}
     }
-  ; eval = λ {A} {B} → record
+  ; eval = {!!} {- λ {A} {B} → record
     { g = Psh.eval
     ; h = ContextualCartesianClosed.eval S.CCC
     ; commute = λ {Γ} {x₁} {x₂} x₁≈x₂ → eval-commute {A} {B} {Γ} {x₁} {x₂} x₁≈x₂
-    }
-  ; β = λ {Γ} {A} {B} f →
+    } -}
+  ; β = {!!} {- λ {Γ} {A} {B} f →
     ( ContextualCartesianClosed.β (Psh.CCC λ A₀ → 𝔑𝔣₀ ` A₀ `) {CommaObj.α Γ} {A} {B} (Comma⇒.g f)
     , ContextualCartesianClosed.β S.CCC (Comma⇒.h f)
-    )
-  ; unique = λ {Γ} {A} {B} {g} {h} x →
+    ) -}
+  ; unique = {!!} {- λ {Γ} {A} {B} {g} {h} x →
     ( ContextualCartesianClosed.unique (Psh.CCC λ A₀ → 𝔑𝔣₀ ` A₀ `)
         {CommaObj.α Γ} {A} {B} {Comma⇒.g g} {Comma⇒.g h} (proj₁ x)
     , ContextualCartesianClosed.unique S.CCC (proj₂ x)
-    )
+    ) -}
   }
+-}
+
+{-
   where Λ-commute : ∀ {Γ A B} f {Δ x₁ x₂} → Setoid._≈_ (Functor.₀ (CommaObj.α Γ) Δ) x₁ x₂ → _
         Λ-commute {Γ} {A} {B} f {Δ} {x₁} {x₂} x₁≈x₂ = S.∷-congᵣ (begin
             S.Λ (S.𝒵 (Comma⇒.h f)) S.[ NaturalTransformation.η (CommaObj.f Γ) Δ ⟨$⟩ x₁ ]
