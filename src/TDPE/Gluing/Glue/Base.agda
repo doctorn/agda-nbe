@@ -34,10 +34,13 @@ Tm = precompose (Functor.op W) ∘F Yoneda.embed 𝕋𝕞
 
 module Tm = Functor Tm
 
-module _ A where module 𝔑𝔣₀ = Functor (𝔑𝔣₀ A)
-module _ A where module 𝔑𝔢₀ = Functor (𝔑𝔢₀ A)
-module _ Γ where module 𝔑𝔣 = Functor (𝔑𝔣 Γ)
-module _ Γ where module 𝔑𝔢 = Functor (𝔑𝔢 Γ)
+module _ A where
+  module 𝔑𝔣₀ = Functor (𝔑𝔣₀ A)
+  module 𝔑𝔢₀ = Functor (𝔑𝔢₀ A)
+
+module _ Γ where
+  module 𝔑𝔣 = Functor (𝔑𝔣 Γ)
+  module 𝔑𝔢 = Functor (𝔑𝔢 Γ)
 
 private
 
@@ -217,10 +220,13 @@ private
           ∎
           where open Reasoning S.setoid
 
-module _ A where module 𝔦₀ = NaturalTransformation (𝔦₀ A)
-module _ A where module 𝔦₀′ = NaturalTransformation (𝔦₀′ A)
-module _ Γ where module 𝔦 = NaturalTransformation (𝔦 Γ)
-module _ Γ where module 𝔦′ = NaturalTransformation (𝔦′ Γ)
+module _ A where
+  module 𝔦₀ = NaturalTransformation (𝔦₀ A)
+  module 𝔦₀′ = NaturalTransformation (𝔦₀′ A)
+
+module _ Γ where
+  module 𝔦 = NaturalTransformation (𝔦 Γ)
+  module 𝔦′ = NaturalTransformation (𝔦′ Γ)
 
 Gl : Category (suc a) a a
 Gl = Comma {A = Psh.Psh} Categories.Functor.id Tm
