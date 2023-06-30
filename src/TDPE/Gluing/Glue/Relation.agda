@@ -401,7 +401,7 @@ CCC = record
   ; Λ = λ {Γ} {A} {B} f → record
     { g = Psh.unit Psh.∘ Λ′ {Γ} {A} {B} f
     ; h = ! ∷ Λ (𝒵 (Comma⇒.h f))
-    ; commute = λ {Δ} {x₁} {x₂} x₁≈x₂ → {!!}
+    ; commute = λ {Δ} {x₁} {x₂} x₁≈x₂ → Λ-commute {Γ} {A} {B} f {Δ} {x₁} {x₂} x₁≈x₂
     }
   ; eval = λ {A} {B} → record
     { g = ntHelper (record
@@ -420,3 +420,35 @@ CCC = record
   ; β = {!!}
   ; unique = {!!}
   }
+  where
+    module _ {Γ A B} (f : Γ × A Gl.⇒ ⊤ × B) {Δ x₁ x₂} where
+      module fg = NaturalTransformation (Comma⇒.g f)
+      module Γα = Functor (CommaObj.α Γ)
+      module Γf = NaturalTransformation (CommaObj.f Γ)
+
+      Λ-commute : Setoid._≈_ (Functor.₀ (CommaObj.α Γ) Δ) x₁ x₂
+                  → ! ∷ Λ (𝒵 (Comma⇒.h f)) [ Γf.η Δ ⟨$⟩ x₁ ] S.≈
+                      ! ∷ Λ (𝒵 (𝔦₀.η B (Δ · A) ⟨$⟩ (↓₀.η B (Δ · A) ⟨$⟩
+                      (proj₂ (fg.η (Δ · A) ⟨$⟩
+                          (Γα.₁ (ω₁ ϵ) ⟨$⟩ x₂ , ↑₀.η A (Δ · A) ⟨$⟩ R.𝓋 R.𝓏))))))
+      Λ-commute x₁≈x₂ = ∷-congᵣ (begin
+          Λ (𝒵 (Comma⇒.h f)) [ Γf.η Δ ⟨$⟩ x₁ ]
+        ≈⟨ sb-lam ⟩
+          Λ (𝒵 (Comma⇒.h f) [ ↑[ Γf.η Δ ⟨$⟩ x₁ ] ])
+        ≈⟨ Λ-cong (sb-comp {γ = Comma⇒.h f}) ⟩
+          Λ (𝒵 (Comma⇒.h f ∘ ↑[ Γf.η Δ ⟨$⟩ x₁ ]))
+        ≈⟨
+          Λ-cong (𝒵-cong (∘-congᵣ {γ = Comma⇒.h f} (∷-congₗ (S.sym
+            (S.trans
+              ∘-identityˡ
+              (S.trans
+                (∘-congᵣ (S.trans (∘-congₗ (W.identity {A = Δ})) ∘-identityˡ))
+                (S.trans π-lemma (π-cong ∘-identityʳ))))))))
+        ⟩
+          _
+        ≈⟨ Λ-cong (𝒵-cong (∘-congᵣ {γ = Comma⇒.h f} (∷-cong₂ (Γf.sym-commute (ω₁ ϵ) (Setoid.refl (Γα.₀ Δ))) (C.sym (𝒵-cong (yoga₀ PE.refl)))))) ⟩
+          Λ (𝒵 (Comma⇒.h f ∘ ((Γf.η (Δ · A) ⟨$⟩ (Γα.₁ (ω₁ ϵ) ⟨$⟩ x₁)) ∷ 𝒵 (𝔦₀.η A (Δ · A) ⟨$⟩ (↓₀.η A (Δ · A) ⟨$⟩ (↑₀.η A (Δ · A) ⟨$⟩ R.𝓋 R.𝓏))))))
+        ≈⟨ Λ-cong (𝒵-cong (Comma⇒.commute f ((cong (Γα.₁ (ω₁ ϵ)) x₁≈x₂) , cong (↑₀.η A (Δ · A)) PE.refl))) ⟩
+          Λ (𝒵 (𝔦₀.η B (Δ · A) ⟨$⟩ (↓₀.η B (Δ · A) ⟨$⟩ (proj₂ (fg.η (Δ · A) ⟨$⟩ (Γα.₁ (ω₁ ϵ) ⟨$⟩ x₂ ,  ↑₀.η A (Δ · A) ⟨$⟩ R.𝓋 R.𝓏))))))
+        ∎)
+        where open Reasoning C.setoid
