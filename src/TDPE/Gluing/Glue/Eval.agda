@@ -93,18 +93,21 @@ module _ {A B} where
       ∎)
       where open Reasoning C.setoid
 
+  eval′ : CommaObj.α (⊤ × (A ⇒ B) × A) Psh.⇒ CommaObj.α (⊤ × B)
+  eval′ = ntHelper (record
+    { η = λ Γ → record
+      { _⟨$⟩_ = λ { ((tt , ((_ , f) , _)) , x) → tt , NaturalTransformation.η f Γ ⟨$⟩ (x , ϵ) }
+      ; cong = λ { ((tt , ((_ , f) , _)) , x) → tt , f (x , PE.refl) }
+      }
+    ; commute = λ { g {(tt , ((_ , f₁) , _)) , x₁} {(tt , ((_ , f₂) , _)) , x₂} ((tt , ((_ , f₁≈f₂) , _)) , x₁≈x₂) →
+      tt , (Setoid.trans (𝓡₀.₀ B _)
+        (f₁≈f₂ ((Setoid.refl (𝓡₀.₀ A _)) , PE.trans 𝕎.identityʳ (PE.sym (PE.trans 𝕎.identityˡ 𝕎.identityˡ))))
+        (NaturalTransformation.commute f₂ g (x₁≈x₂ , PE.refl))) }
+    })
+
   eval : ⊤ × (A ⇒ B) × A Gl.⇒ ⊤ × B
   eval = record
-    { g = ntHelper (record
-      { η = λ Γ → record
-        { _⟨$⟩_ = λ { ((tt , ((_ , f) , _)) , x) → tt , NaturalTransformation.η f Γ ⟨$⟩ (x , ϵ) }
-        ; cong = λ { ((tt , ((_ , f) , _)) , x) → tt , f (x , PE.refl) }
-        }
-      ; commute = λ { g {(tt , ((_ , f₁) , _)) , x₁} {(tt , ((_ , f₂) , _)) , x₂} ((tt , ((_ , f₁≈f₂) , _)) , x₁≈x₂) →
-        tt , (Setoid.trans (𝓡₀.₀ B _)
-          (f₁≈f₂ ((Setoid.refl (𝓡₀.₀ A _)) , PE.trans 𝕎.identityʳ (PE.sym (PE.trans 𝕎.identityˡ 𝕎.identityˡ))))
-          (NaturalTransformation.commute f₂ g (x₁≈x₂ , PE.refl))) }
-      })
+    { g = eval′
     ; h = ContextualCartesianClosed.eval Syntax.CCC
     ; commute = λ {Γ} {x₁} {x₂} x₁≈x₂ → eval-commute {Γ} {x₁} {x₂} x₁≈x₂
     }

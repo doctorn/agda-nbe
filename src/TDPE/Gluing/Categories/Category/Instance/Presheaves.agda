@@ -459,7 +459,14 @@ module _ {a} {𝒰 : Set a} where
                         πhcθ.η d ⟨$⟩ (x₁ , y₁)
                       ≈⟨ cong (πhcθ.η d) (Setoid.refl (A.₀ d) , 𝒞.Equiv.sym 𝒞.identityʳ) ⟩
                         πhcθ.η d ⟨$⟩ (x₁ , y₁ 𝒞.∘ 𝒞.id)
-                      ≈⟨ proj₂ (h.sym-commute y₁ (Setoid.refl (Γ.₀ c))) (Setoid.refl (A.₀ d) , 𝒞.Equiv.refl) ⟩
+                      ≈⟨
+                        proj₂
+                          (Setoid.sym (⊤×A^B.₀ d)
+                            {x = h.η d ⟨$⟩ (Γ.₁ y₁ ⟨$⟩ θ)}
+                            {y = ⊤×A^B.₁ y₁ ⟨$⟩ (h.η c ⟨$⟩ θ)}
+                            (h.commute y₁ (Setoid.refl (Γ.₀ c))))
+                          (Setoid.refl (A.₀ d) , 𝒞.Equiv.refl)
+                      ⟩
                         πhdΓyθ.η d ⟨$⟩ (x₁ , 𝒞.id)
                       ≈⟨ proj₂ (ϵ⟨hπ,𝓏⟩≈g (Γ.F-resp-≈ y₁≈y₂ θ≈θ′ , x₁≈x₂)) ⟩
                         proj₂ (g.η d ⟨$⟩ (Γ.₁ y₂ ⟨$⟩ θ′ , x₂))

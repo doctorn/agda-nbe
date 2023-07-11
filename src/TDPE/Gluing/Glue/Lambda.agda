@@ -101,8 +101,8 @@ module _ {Γ} {A} {B} (f : Γ × A Gl.⇒ (⊤ × B)) where
       where open Reasoning S.setoid
             module fg = NaturalTransformation (Comma⇒.g f)
 
-  Λ′ : CommaObj.α Γ Psh.⇒ 𝓡₀ (A ⇒ B)
-  Λ′ = Pullback.universal (ψ {A} {B} Psh.⊗ ϕ {A} {B}) {h₁ = h₁} {h₂ = h₂} coherence
+  Λ′′ : CommaObj.α Γ Psh.⇒ 𝓡₀ (A ⇒ B)
+  Λ′′ = Pullback.universal (ψ {A} {B} Psh.⊗ ϕ {A} {B}) {h₁ = h₁} {h₂ = h₂} coherence
 
   module _ {Δ} {x₁} {x₂} where
     private module fg = NaturalTransformation (Comma⇒.g f)
@@ -127,16 +127,16 @@ module _ {Γ} {A} {B} (f : Γ × A Gl.⇒ (⊤ × B)) where
               (S.trans π-lemma (π-cong ∘-identityʳ))))))))
       ⟩
         _
-      ≈⟨ Λ-cong (𝒵-cong (∘-congᵣ {γ = Comma⇒.h f} (∷-cong₂ (Γf.sym-commute (ω₁ ϵ) (Setoid.refl (Γα.₀ Δ))) (C.sym (𝒵-cong (yoga₀ PE.refl)))))) ⟩
+      ≈⟨ Λ-cong (𝒵-cong (∘-congᵣ {γ = Comma⇒.h f} (∷-cong₂ (S.sym (Γf.commute (ω₁ ϵ) (Setoid.refl (Γα.₀ Δ)))) (C.sym (𝒵-cong (yoga₀ PE.refl)))))) ⟩
         Λ (𝒵 (Comma⇒.h f ∘ ((Γf.η (Δ · A) ⟨$⟩ (Γα.₁ (ω₁ ϵ) ⟨$⟩ x₁)) ∷ 𝒵 (𝔦₀.η A (Δ · A) ⟨$⟩ (↓₀.η A (Δ · A) ⟨$⟩ (↑₀.η A (Δ · A) ⟨$⟩ R.𝓋 R.𝓏))))))
       ≈⟨ Λ-cong (𝒵-cong (Comma⇒.commute f ((cong (Γα.₁ (ω₁ ϵ)) x₁≈x₂) , cong (↑₀.η A (Δ · A)) PE.refl))) ⟩
         Λ (𝒵 (𝔦₀.η B (Δ · A) ⟨$⟩ (↓₀.η B (Δ · A) ⟨$⟩ (proj₂ (fg.η (Δ · A) ⟨$⟩ (Γα.₁ (ω₁ ϵ) ⟨$⟩ x₂ ,  ↑₀.η A (Δ · A) ⟨$⟩ R.𝓋 R.𝓏))))))
       ∎)
       where open Reasoning C.setoid
 
-  Gl-Λ : Γ Gl.⇒ ⊤ × (A ⇒ B)
-  Gl-Λ = record
-    { g = Psh.unit Psh.∘ Λ′
+  Λ′ : Γ Gl.⇒ ⊤ × (A ⇒ B)
+  Λ′ = record
+    { g = Psh.unit Psh.∘ Λ′′
     ; h = ! ∷ Λ (𝒵 (Comma⇒.h f))
     ; commute = λ {Δ} {x₁} {x₂} x₁≈x₂ → Λ-commute {Δ} {x₁} {x₂} x₁≈x₂
     }
