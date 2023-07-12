@@ -33,6 +33,7 @@ open import Categories.Diagram.Pullback Psh.Psh using (Pullback)
 module 𝕎 = Category 𝕎
 open ContextualCartesian CC
 
+{-
 module _ {Γ A B} (f : Γ · A Gl.⇒ [ B ]) where
 
   private
@@ -55,12 +56,13 @@ module _ {Γ A B} (f : Γ · A Gl.⇒ [ B ]) where
 
   β : eval Gl.∘ ⟨ (Λ′ {Γ} {A} {B} f) Gl.∘ (π {Γ} {A}) , 𝓏 {Γ} {A} ⟩ Gl.≈ f
   β = β′ , ContextualCartesianClosed.β Syntax.CCC (Comma⇒.h f)
+-}
 
 module _
   {Γ A B}
   {g : Γ · A Gl.⇒ [ B ]}
   {h : Γ Gl.⇒ [ A ^ B ]}
-  (p : eval Gl.∘ ⟨ h Gl.∘ π , 𝓏 ⟩ Gl.≈ g)
+  (p : eval Gl.∘ ⟨ h Gl.∘ π {Γ} {A} , 𝓏 {Γ} {A} ⟩ Gl.≈ g)
   where
 
   private
@@ -80,7 +82,7 @@ module _
           {h₂ = h₂ {Γ} {A} {B} g}
           {i = Psh.counit Psh.∘ Comma⇒.g h}
           {eq = coherence {Γ} {A} {B} g}
-          (λ {Δ} {x} {y} x≈y → {!!})
+          (λ {Δ} {γ} {δ} γ≈δ → {!!})
           (λ {Δ} {x} {y} x≈y {Ξ} {z} {w} z≈w → {!!})
           γ≈δ
     ⟩
@@ -89,6 +91,7 @@ module _
     where [A^B] = Functor.₀ (CommaObj.α [ A ^ B ]) Δ
           open Reasoning [A^B]
 
+{-
   unique : h Gl.≈ Λ′ {Γ} {A} {B} g
   unique = unique′ , ContextualCartesianClosed.unique Syntax.CCC (proj₂ p)
 
@@ -100,3 +103,4 @@ CCC = record
   ; β = λ {Γ} {A} {B} f → β {Γ} {A} {B} f
   ; unique = λ {Γ} {A} {B} {g} {h} p → unique {Γ} {A} {B} {g} {h} p
   }
+-}
