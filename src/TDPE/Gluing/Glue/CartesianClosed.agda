@@ -19,12 +19,16 @@ open import TDPE.Gluing.Glue.Base 𝒰
 open import TDPE.Gluing.Glue.Cartesian 𝒰
 open import TDPE.Gluing.Glue.Lambda 𝒰
 open import TDPE.Gluing.Glue.Eval 𝒰 using (eval; eval′)
+open import TDPE.Gluing.Glue.Yoga 𝒰 using (ϕ; ψ)
 
 open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ϵ)
+open import TDPE.Gluing.Contexts 𝒰 using (𝒰ᵀ) renaming (_⇒_ to _^_)
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 import TDPE.Gluing.Syntax 𝒰 as Syntax
+
+open import Categories.Diagram.Pullback Psh.Psh using (Pullback)
 
 module 𝕎 = Category 𝕎
 open ContextualCartesian CC
@@ -52,11 +56,47 @@ module _ {Γ A B} (f : Γ · A Gl.⇒ [ B ]) where
   β : eval Gl.∘ ⟨ (Λ′ {Γ} {A} {B} f) Gl.∘ (π {Γ} {A}) , 𝓏 {Γ} {A} ⟩ Gl.≈ f
   β = β′ , ContextualCartesianClosed.β Syntax.CCC (Comma⇒.h f)
 
+module _
+  {Γ A B}
+  {g : Γ · A Gl.⇒ [ B ]}
+  {h : Γ Gl.⇒ [ A ^ B ]}
+  (p : eval Gl.∘ ⟨ h Gl.∘ π , 𝓏 ⟩ Gl.≈ g)
+  where
+
+  private
+    Λ′g = Λ′′ {Γ} {A} {B} g
+
+  unique′ : Comma⇒.g h Psh.≈ Psh.unit Psh.∘ Λ′g
+  unique′ {Δ} {γ} {δ} γ≈δ = begin
+      NaturalTransformation.η (Comma⇒.g h) Δ ⟨$⟩ γ
+    ≈⟨ tt , proj₂ (Setoid.refl [A^B]) ⟩
+      tt , proj₂ (NaturalTransformation.η (Comma⇒.g h) Δ ⟨$⟩ γ)
+    ≈⟨
+        tt
+      ,
+        Pullback.unique
+          (ψ {A} {B} Psh.⊗ ϕ {A} {B})
+          {h₁ = h₁ {Γ} {A} {B} g}
+          {h₂ = h₂ {Γ} {A} {B} g}
+          {i = Psh.counit Psh.∘ Comma⇒.g h}
+          {eq = coherence {Γ} {A} {B} g}
+          (λ {Δ} {x} {y} x≈y → {!!})
+          (λ {Δ} {x} {y} x≈y {Ξ} {z} {w} z≈w → {!!})
+          γ≈δ
+    ⟩
+      tt , NaturalTransformation.η (Λ′g) Δ ⟨$⟩ δ
+    ∎
+    where [A^B] = Functor.₀ (CommaObj.α [ A ^ B ]) Δ
+          open Reasoning [A^B]
+
+  unique : h Gl.≈ Λ′ {Γ} {A} {B} g
+  unique = unique′ , ContextualCartesianClosed.unique Syntax.CCC (proj₂ p)
+
 CCC : ContextualCartesianClosed Gl 𝒰
 CCC = record
   { cartesian = CC
   ; Λ = Λ′
   ; eval = eval
   ; β = λ {Γ} {A} {B} f → β {Γ} {A} {B} f
-  ; unique = {!!}
+  ; unique = λ {Γ} {A} {B} {g} {h} p → unique {Γ} {A} {B} {g} {h} p
   }
