@@ -13,25 +13,27 @@ open import Categories.NaturalTransformation using (NaturalTransformation)
 open import Categories.Category.Construction.Comma using (Comma; CommaObj; Comma⇒)
 
 open import Relation.Binary using (Setoid)
+import Relation.Binary.PropositionalEquality as PE
 import Relation.Binary.Reasoning.Setoid as Reasoning
 
 open import TDPE.Gluing.Glue.Base 𝒰
 open import TDPE.Gluing.Glue.Cartesian 𝒰
 open import TDPE.Gluing.Glue.Lambda 𝒰
 open import TDPE.Gluing.Glue.Eval 𝒰 using (eval; eval′)
-open import TDPE.Gluing.Glue.Yoga 𝒰 using (ϕ; ψ)
+open import TDPE.Gluing.Glue.Yoga 𝒰 using (↓₀; ↑₀; ϕ; ψ; 𝓡₀; yoga₀)
 
-open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ϵ)
-open import TDPE.Gluing.Contexts 𝒰 using (𝒰ᵀ) renaming (_⇒_ to _^_)
+open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ϵ; ω₁)
+open import TDPE.Gluing.Contexts 𝒰 using (ℭ; 𝒰ᵀ) renaming (_⇒_ to _^_)
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
+import TDPE.Gluing.Representation 𝒰 as R
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
-import TDPE.Gluing.Syntax 𝒰 as Syntax
+open import TDPE.Gluing.Syntax 𝒰 as Syntax hiding (CC; CCC)
 
 open import Categories.Diagram.Pullback Psh.Psh using (Pullback)
 
 module 𝕎 = Category 𝕎
-open ContextualCartesian CC
+module CC = ContextualCartesian CC
 
 {-
 module _ {Γ A B} (f : Γ · A Gl.⇒ [ B ]) where
@@ -60,14 +62,56 @@ module _ {Γ A B} (f : Γ · A Gl.⇒ [ B ]) where
 
 module _
   {Γ A B}
-  {g : Γ · A Gl.⇒ [ B ]}
-  {h : Γ Gl.⇒ [ A ^ B ]}
-  (p : eval Gl.∘ ⟨ h Gl.∘ π {Γ} {A} , 𝓏 {Γ} {A} ⟩ Gl.≈ g)
+  {g : Γ CC.· A Gl.⇒ CC.[ B ]}
+  {h : Γ Gl.⇒ CC.[ A ^ B ]}
+  (eq : eval Gl.∘ CC.⟨ h Gl.∘ CC.π {Γ} {A} , CC.𝓏 {Γ} {A} ⟩ Gl.≈ g)
   where
 
   private
     Λ′g = Λ′′ {Γ} {A} {B} g
 
+    ψ⊗ϕ = ψ {A} {B} Psh.⊗ ϕ {A} {B}
+
+    triangle₁ : Pullback.p₁ ψ⊗ϕ Psh.∘ Psh.counit Psh.∘ Comma⇒.g h Psh.≈ h₁ {Γ} {A} {B} g
+    triangle₁ {Δ} {γ} {δ} γ≈δ =
+      let (tt , ((x , y) , commutes)) = hg.η Δ ⟨$⟩ γ in (begin
+        x
+      ≈⟨ S.sym 𝓏η ⟩
+        ! ∷ 𝓏 [ x ]
+      ≈⟨ ∷-congᵣ Λη ⟩
+        ! ∷ Λ ((𝓏 [ x ] [ π id ]) ⦅ 𝓏 ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (app-cong₂ sb-assoc (𝒵-cong (S.sym (yoga₀ PE.refl))))) ⟩
+        ! ∷ Λ ((𝓏 [ x ∘ π id ]) ⦅ 𝒵 (𝔦₀.η A (Δ ℭ.· A) ⟨$⟩ (↓₀.η A (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏))) ⦆)
+      ≈⟨ ? ⟩
+        ! ∷ Λ ((𝓏 [ x ∘ ? ]) ⦅ 𝒵 (𝔦₀.η A (Δ ℭ.· A) ⟨$⟩ (↓₀.η A (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏))) ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (𝒵-cong (commutes (Setoid.refl (𝓡₀.₀ A (Δ ℭ.· A)) , ?)))) ⟩
+        ! ∷ Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ)))))
+      ≈⟨ ∷-congᵣ (Λη {f =  Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ)))))}) ⟩
+        ! ∷ Λ ((Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ))))) [ π id ]) ⦅ 𝓏 ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (app-congₗ (C.sym v𝓏))) ⟩
+        ! ∷ Λ ((𝓏 [ ! ∷ (Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ))))) [ π id ]) ]) ⦅ 𝓏 ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (app-congₗ (sb-congᵣ (∘-congₗ (S.sym (Comma⇒.commute h (Setoid.sym (Γα.₀ Δ) γ≈δ))))))) ⟩
+        ! ∷ Λ ((𝓏 [ (Comma⇒.h h ∘ (Γf.η Δ ⟨$⟩ δ)) ∘ π id ]) ⦅ 𝓏 ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (app-congₗ (sb-congᵣ (S.trans (S.trans ∘-assoc (∘-congᵣ π-id)) (S.trans (∘-congᵣ (S.sym πβ′)) ∘-sym-assoc))))) ⟩
+        ! ∷ Λ ((𝓏 [ (Comma⇒.h h ∘ π id) ∘ (π (Γf.η Δ ⟨$⟩ δ) ∷ 𝓏) ]) ⦅ 𝓏 ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (app-cong₂ (C.sym sb-assoc) (C.sym v𝓏))) ⟩
+        ! ∷ Λ ((𝓏 [ Comma⇒.h h ∘ π id ] [ π (Γf.η Δ ⟨$⟩ δ) ∷ 𝓏 ]) ⦅ 𝓏 [ π (Γf.η Δ ⟨$⟩ δ) ∷ 𝓏 ] ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (C.sym sb-app)) ⟩
+        ! ∷ Λ (((𝓏 [ Comma⇒.h h ∘ π id ]) ⦅ 𝓏 ⦆) [ π (Γf.η Δ ⟨$⟩ δ) ∷ 𝓏 ])
+      ≈⟨ ∷-congᵣ (Λ-cong (sb-congₗ (app-cong₂ (C.sym vp) (C.sym v𝓏)))) ⟩
+        ! ∷ Λ (((p 𝓏 [ Comma⇒.h h ∘ π id ∷ 𝓏 ]) ⦅ 𝓏 [ Comma⇒.h h ∘ π id ∷ 𝓏 ] ⦆) [ π (Γf.η Δ ⟨$⟩ δ) ∷ 𝓏 ])
+      ≈⟨ ∷-congᵣ (Λ-cong (sb-congₗ (C.sym sb-app))) ⟩
+        ! ∷ Λ ((p 𝓏 ⦅ 𝓏 ⦆) [ Comma⇒.h h ∘ π id ∷ 𝓏 ] [ π (Γf.η Δ ⟨$⟩ δ) ∷ 𝓏 ])
+      ≈⟨ ∷-congᵣ (Λ-cong (𝒵-cong (∘-congₗ (proj₂ eq)))) ⟩
+        ! ∷ Λ (𝒵 (Comma⇒.h g ∘ (π (Γf.η Δ ⟨$⟩ δ) ∷ 𝓏)))
+      ∎)
+      where open Reasoning S.setoid
+
+            module hg = NaturalTransformation (Comma⇒.g h)
+            module Γα = Functor (CommaObj.α Γ)
+            module Γf = NaturalTransformation (CommaObj.f Γ)
+
+{-
   unique′ : Comma⇒.g h Psh.≈ Psh.unit Psh.∘ Λ′g
   unique′ {Δ} {γ} {δ} γ≈δ = begin
       NaturalTransformation.η (Comma⇒.g h) Δ ⟨$⟩ γ
@@ -82,14 +126,15 @@ module _
           {h₂ = h₂ {Γ} {A} {B} g}
           {i = Psh.counit Psh.∘ Comma⇒.g h}
           {eq = coherence {Γ} {A} {B} g}
-          (λ {Δ} {γ} {δ} γ≈δ → {!!})
+          triangle₁
           (λ {Δ} {x} {y} x≈y {Ξ} {z} {w} z≈w → {!!})
           γ≈δ
     ⟩
-      tt , NaturalTransformation.η (Λ′g) Δ ⟨$⟩ δ
+      tt , NaturalTransformation.η Λ′g Δ ⟨$⟩ δ
     ∎
-    where [A^B] = Functor.₀ (CommaObj.α [ A ^ B ]) Δ
+    where [A^B] = Functor.₀ (CommaObj.α CC.[ A ^ B ]) Δ
           open Reasoning [A^B]
+-}
 
 {-
   unique : h Gl.≈ Λ′ {Γ} {A} {B} g
