@@ -35,8 +35,7 @@ open import Categories.Diagram.Pullback Psh.Psh using (Pullback)
 module 𝕎 = Category 𝕎
 module CC = ContextualCartesian CC
 
-{-
-module _ {Γ A B} (f : Γ · A Gl.⇒ [ B ]) where
+module _ {Γ A B} (f : Γ CC.· A Gl.⇒ CC.[ B ]) where
 
   private
     Λ′f = Λ′′ {Γ} {A} {B} f
@@ -53,12 +52,11 @@ module _ {Γ A B} (f : Γ · A Gl.⇒ [ B ]) where
     ≈⟨ tt , proj₂ (Setoid.refl [B]) ⟩
       fg.η Δ ⟨$⟩ (δ , b)
     ∎
-    where [B] = Functor.₀ (CommaObj.α [ B ]) Δ
+    where [B] = Functor.₀ (CommaObj.α CC.[ B ]) Δ
           open Reasoning [B]
 
-  β : eval Gl.∘ ⟨ (Λ′ {Γ} {A} {B} f) Gl.∘ (π {Γ} {A}) , 𝓏 {Γ} {A} ⟩ Gl.≈ f
+  β : eval Gl.∘ CC.⟨ (Λ′ {Γ} {A} {B} f) Gl.∘ (CC.π {Γ} {A}) , CC.𝓏 {Γ} {A} ⟩ Gl.≈ f
   β = β′ , ContextualCartesianClosed.β Syntax.CCC (Comma⇒.h f)
--}
 
 module _
   {Γ A B}
@@ -82,10 +80,12 @@ module _
         ! ∷ Λ ((𝓏 [ x ] [ π id ]) ⦅ 𝓏 ⦆)
       ≈⟨ ∷-congᵣ (Λ-cong (app-cong₂ sb-assoc (𝒵-cong (S.sym (yoga₀ PE.refl))))) ⟩
         ! ∷ Λ ((𝓏 [ x ∘ π id ]) ⦅ 𝒵 (𝔦₀.η A (Δ ℭ.· A) ⟨$⟩ (↓₀.η A (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏))) ⦆)
-      ≈⟨ ? ⟩
-        ! ∷ Λ ((𝓏 [ x ∘ ? ]) ⦅ 𝒵 (𝔦₀.η A (Δ ℭ.· A) ⟨$⟩ (↓₀.η A (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏))) ⦆)
-      ≈⟨ ∷-congᵣ (Λ-cong (𝒵-cong (commutes (Setoid.refl (𝓡₀.₀ A (Δ ℭ.· A)) , ?)))) ⟩
-        ! ∷ Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ)))))
+      ≈⟨ ∷-congᵣ (Λ-cong (app-congₗ (sb-congᵣ (∘-congᵣ (S.trans (S.sym ∘-identityˡ) (∘-congₗ (S.sym (W.identity {Δ})))))))) ⟩
+        ! ∷ Λ ((𝓏 [ x ∘ (W.₁ (ϵ {Δ}) ∘ π id) ]) ⦅ 𝒵 (𝔦₀.η A (Δ ℭ.· A) ⟨$⟩ (↓₀.η A (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏))) ⦆)
+      ≈⟨ ∷-congᵣ (Λ-cong (𝒵-cong ( commutes (Setoid.refl (𝓡₀.₀ A (Δ ℭ.· A)) , PE.refl {x = ω₁ ϵ})))) ⟩
+        ! ∷ Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ (ϵ 𝕎.∘ ϵ))))))
+      ≈⟨ ∷-congᵣ (Λ-cong (𝒵-cong (cong (𝔦₀.η B (Δ ℭ.· A)) (cong (↓₀.η B (Δ ℭ.· A)) (cong (NaturalTransformation.η y (Δ ℭ.· A)) (Setoid.refl ( (𝓡₀.₀ A (Δ ℭ.· A))) , (PE.cong ω₁ 𝕎.identity²))))))) ⟩
+        ! ∷ Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ (ϵ {Δ}))))))
       ≈⟨ ∷-congᵣ (Λη {f =  Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ)))))}) ⟩
         ! ∷ Λ ((Λ (𝒵 (𝔦₀.η B (Δ ℭ.· A) ⟨$⟩ (↓₀.η B (Δ ℭ.· A) ⟨$⟩ (NaturalTransformation.η y (Δ ℭ.· A) ⟨$⟩ (↑₀.η A (Δ ℭ.· A) ⟨$⟩ R.𝓋 R.𝓏 , ω₁ ϵ))))) [ π id ]) ⦅ 𝓏 ⦆)
       ≈⟨ ∷-congᵣ (Λ-cong (app-congₗ (C.sym v𝓏))) ⟩
@@ -111,7 +111,6 @@ module _
             module Γα = Functor (CommaObj.α Γ)
             module Γf = NaturalTransformation (CommaObj.f Γ)
 
-{-
   unique′ : Comma⇒.g h Psh.≈ Psh.unit Psh.∘ Λ′g
   unique′ {Δ} {γ} {δ} γ≈δ = begin
       NaturalTransformation.η (Comma⇒.g h) Δ ⟨$⟩ γ
@@ -134,11 +133,9 @@ module _
     ∎
     where [A^B] = Functor.₀ (CommaObj.α CC.[ A ^ B ]) Δ
           open Reasoning [A^B]
--}
 
-{-
   unique : h Gl.≈ Λ′ {Γ} {A} {B} g
-  unique = unique′ , ContextualCartesianClosed.unique Syntax.CCC (proj₂ p)
+  unique = unique′ , ContextualCartesianClosed.unique Syntax.CCC (proj₂ eq)
 
 CCC : ContextualCartesianClosed Gl 𝒰
 CCC = record
@@ -146,6 +143,5 @@ CCC = record
   ; Λ = Λ′
   ; eval = eval
   ; β = λ {Γ} {A} {B} f → β {Γ} {A} {B} f
-  ; unique = λ {Γ} {A} {B} {g} {h} p → unique {Γ} {A} {B} {g} {h} p
+  ; unique = λ {Γ} {A} {B} {g} {h} eq → unique {Γ} {A} {B} {g} {h} eq
   }
--}
