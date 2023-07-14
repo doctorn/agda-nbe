@@ -19,18 +19,15 @@ open import TDPE.Gluing.Categories.Functor.Properties using (precompose)
 
 open import TDPE.Gluing.Contexts 𝒰
 open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ⟦_⟧; ω₁; ω₂; 𝒲)
+open import TDPE.Gluing.Embedding 𝒰
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
 open import TDPE.Gluing.Representation 𝒰 as R using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣)
 open import TDPE.Gluing.Syntax 𝒰
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 
-W = ⟦_⟧ CC
-
-module W = Functor W
-
 Tm : Functor 𝕋𝕞 Psh.Psh
-Tm = precompose (Functor.op W) ∘F Yoneda.embed 𝕋𝕞
+Tm = precompose (Functor.op E) ∘F Yoneda.embed 𝕋𝕞
 
 module Tm = Functor Tm
 
@@ -51,9 +48,9 @@ private
   𝔦₀′-cong : ∀ A Γ {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)} → x ≡ y → 𝔦₀′-η A Γ x S.≈ 𝔦₀′-η A Γ y
 
   𝔦₀-commute : ∀ A {Γ Δ} (f : 𝒲 Δ Γ) {x y : Setoid.Carrier (𝔑𝔣₀.₀ A Γ)}
-               → x ≡ y → 𝔦₀-η A Δ (R.+ f x) S.≈ ! ∷ 𝓏 [ 𝔦₀-η A Γ y ∘ W.₁ f ]
+               → x ≡ y → 𝔦₀-η A Δ (R.+ f x) S.≈ ! ∷ 𝓏 [ 𝔦₀-η A Γ y ∘ E.₁ f ]
   𝔦₀′-commute : ∀ A {Γ Δ} (f : 𝒲 Δ Γ) {x y : Setoid.Carrier (𝔑𝔢₀.₀ A Γ)}
-               → x ≡ y → 𝔦₀′-η A Δ (R.+′ f x) S.≈ ! ∷ 𝓏 [ 𝔦₀′-η A Γ y ∘ W.₁ f ]
+               → x ≡ y → 𝔦₀′-η A Δ (R.+′ f x) S.≈ ! ∷ 𝓏 [ 𝔦₀′-η A Γ y ∘ E.₁ f ]
 
   v : ∀ {Γ A} → R.var Γ A → Setoid.Carrier (Functor.₀ (Tm.₀ (𝟙 · A)) Γ)
   v R.𝓏     = ! ∷ 𝓏
@@ -79,6 +76,8 @@ private
   𝔦₀-commute (A ⇒ B) f {x = R.Λ x} PE.refl = ∷-congᵣ (begin
       Λ (𝒵 (𝔦₀-η B _ (R.+ (ω₂ f) x)))
     ≈⟨ Λ-cong (𝒵-cong (𝔦₀-commute B (ω₂ f) {x} PE.refl)) ⟩
+      Λ (𝓏 [ 𝔦₀-η B _ x ∘ (π (E.₁ f) ∷ 𝓏) ])
+    ≈⟨ Λ-cong (sb-congᵣ (∘-congᵣ (∷-congₗ (S.sym π-id)))) ⟩
       Λ (𝓏 [ 𝔦₀-η B _ x ∘ _ ])
     ≈⟨ Λ-cong v𝒵 ⟩
       Λ (𝒵 (𝔦₀-η B _ x ∘ _))
@@ -96,42 +95,38 @@ private
   𝔦₀′-commute A f {R.𝓋 x} PE.refl =
     S.trans (S.trans (I f x) (S.sym 𝒵η)) (∷-congᵣ (C.sym v𝒵))
     where I : ∀ {Γ Δ} (f : 𝒲 Δ Γ) (x : R.var Γ A)
-              → v (R.+var f x) S.≈ v x ∘ W.₁ f
+              → v (R.+var f x) S.≈ v x ∘ E.₁ f
           I {Γ · A} {Δ} (ω₁ f) R.𝓏 = ∷-congᵣ (begin
               p (𝒵 (v (R.+var f R.𝓏)))
             ≈⟨ p-cong (𝒵-cong (I f R.𝓏)) ⟩
-              p (𝒵 (v (R.𝓏 {Γ = Γ}) ∘ W.₁ f))
+              p (𝒵 (v (R.𝓏 {Γ = Γ}) ∘ E.₁ f))
             ≈⟨ p-π ⟩
-              𝓏 [ π (W.₁ f) ]
-            ≈⟨ sb-congᵣ (S.sym π-id) ⟩
-              𝓏 [ W.₁ f ∘ π id ]
+              𝓏 [ π (E.₁ f) ]
             ∎)
             where open Reasoning C.setoid
           I {Γ · A} {Δ · A} (ω₂ f) R.𝓏 = S.sym (∷-congᵣ v𝓏)
           I {Γ · A} {Δ} (ω₁ f) (R.π x) = ∷-congᵣ (begin
               p (𝒵 (v (R.+var f (R.π x))))
             ≈⟨ p-cong (𝒵-cong (I f (R.π x))) ⟩
-              p (p (𝒵 (v x)) [ W.₁ f ])
+              p (p (𝒵 (v x)) [ E.₁ f ])
             ≈⟨ p-π ⟩
-              p (𝒵 (v x)) [ π (W.₁ f) ]
-            ≈⟨ sb-congᵣ (S.sym π-id) ⟩
-              p (𝒵 (v x)) [ W.₁ f ∘ π id ]
+              p (𝒵 (v x)) [ π (E.₁ f) ]
             ∎)
             where open Reasoning C.setoid
           I {Γ · A} {Δ · A} (ω₂ f) (R.π x) = ∷-congᵣ (begin
               p (𝒵 (v (R.+var f x)))
             ≈⟨ p-cong (𝒵-cong (I f x)) ⟩
-              p (𝒵 (v x ∘ W.₁ f))
-            ≈⟨ 𝒵p {γ = v x ∘ W.₁ f} ⟩
-              𝓏 [ π (v x ∘ W.₁ f) ]
+              p (𝒵 (v x ∘ E.₁ f))
+            ≈⟨ 𝒵p {γ = v x ∘ E.₁ f} ⟩
+              𝓏 [ π (v x ∘ E.₁ f) ]
             ≈⟨ sb-congᵣ (S.sym π-lemma) ⟩
-              𝓏 [ v x ∘ π (W.₁ f) ]
+              𝓏 [ v x ∘ π (E.₁ f) ]
             ≈⟨ C.sym sb-assoc ⟩
-              𝓏 [ v x ] [ π (W.₁ f) ]
-            ≈⟨ sb-cong₂ v𝒵 (S.sym π-id) ⟩
-              𝒵 (v x) [ W.₁ f ∘ π id ]
+              𝓏 [ v x ] [ π (E.₁ f) ]
+            ≈⟨ sb-congₗ v𝒵 ⟩
+              𝒵 (v x) [ π (E.₁ f) ]
             ≈⟨ C.sym vp ⟩
-              p (𝒵 (v x)) [ W.₁ f ∘ π id ∷ 𝓏 ]
+              p (𝒵 (v x)) [ π (E.₁ f) ∷ 𝓏 ]
             ∎)
             where open Reasoning C.setoid
   𝔦₀′-commute A f {t R.⦅ x ⦆} PE.refl = ∷-congᵣ (begin

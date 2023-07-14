@@ -16,7 +16,6 @@ import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
 
 --- an initial object in the induced 2-category;
 import TDPE.Gluing.Syntax
-import TDPE.Gluing.Interpretation
 
 --- construction of classifying objects;
 
@@ -24,15 +23,16 @@ import TDPE.Gluing.Interpretation
 import TDPE.Gluing.Weakenings
 
 --- a presheaf construction;
+import TDPE.Gluing.Categories.Category.Instance.Presheaves
 
 --- the definition of the glued universe;
 import TDPE.Gluing.Glue.Base
 
 --- proof that it supports the necessary structure;
-import TDPE.Gluing.Glue.Relation
+import TDPE.Gluing.Glue.CartesianClosed
 
 --- construction of the interpretation;
+import TDPE.Gluing.Interpretation
 
---- construction of the normalisation map;
-
---- proof of the correctness condition.
+--- construction of the normalisation map and proof of the correctness.
+import TDPE.Gluing.Glue.Relation

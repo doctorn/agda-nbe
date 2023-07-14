@@ -19,6 +19,7 @@ open import Relation.Binary.PropositionalEquality as PE using (_≡_)
 open import TDPE.Gluing.Contexts 𝒰
 open import TDPE.Gluing.Glue.Base 𝒰
 open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; ϵ; ω₁; ω₂; 𝒲)
+open import TDPE.Gluing.Embedding 𝒰
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
 open import TDPE.Gluing.Representation 𝒰 as R using (𝔑𝔢₀; 𝔑𝔣₀; 𝔑𝔢; 𝔑𝔣)
 open import TDPE.Gluing.Syntax 𝒰 as Syntax hiding (CC; CCC)
@@ -199,10 +200,8 @@ yoga₀ {A ⇒ B} {Γ} {x} PE.refl =
           ≈⟨ app-congᵣ (𝒵-cong (yoga₀ PE.refl)) ⟩
             𝒵 (𝔦₀′.η (A ⇒ B) (Γ · A) ⟨$⟩ (R.+′ (ω₁ ϵ) x)) ⦅ 𝓏 ⦆
           ≈⟨ app-congₗ (𝒵-cong (𝔦₀′.commute (A ⇒ B) (ω₁ (ϵ {Γ})) {x = x} PE.refl)) ⟩
-            𝓏 [ (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x) ∘ (W.₁ (ϵ {Γ}) ∘ π id) ] ⦅ 𝓏 ⦆
-          ≈⟨ app-congₗ (sb-congᵣ (∘-congᵣ (∘-congₗ (W.identity {Γ})))) ⟩
-            𝓏 [ (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x) ∘ (id ∘ π id) ] ⦅ 𝓏 ⦆
-          ≈⟨ app-congₗ (sb-congᵣ (∘-congᵣ ∘-identityˡ)) ⟩
+            𝓏 [ (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x) ∘ (π (E.₁ (ϵ {Γ}))) ] ⦅ 𝓏 ⦆
+          ≈⟨ app-congₗ (sb-congᵣ (∘-congᵣ (π-cong E.identity))) ⟩
             𝓏 [ (𝔦₀′.η (A ⇒ B) Γ ⟨$⟩ x) ∘ π id ] ⦅ 𝓏 ⦆
           ≈⟨ C.sym (app-cong₂ vp v𝓏) ⟩
             (p 𝓏 [ _ ∷ 𝓏 ]) ⦅ 𝓏 [ _ ∷ 𝓏 ] ⦆
@@ -216,6 +215,7 @@ yoga₀ {A ⇒ B} {Γ} {x} PE.refl =
 module _ Δ where
   module ↑ = NaturalTransformation (↑ Δ)
   module ↓ = NaturalTransformation (↓ Δ)
+  module 𝓡 = Functor (𝓡 Δ)
 
 ↑ 𝟙       = Psh.!
 ↑ (Δ · A) = Psh.⟨ ↑ Δ Psh.∘ R.proj 𝔑𝔢₀ , ↑₀ A Psh.∘ R.zero′ 𝔑𝔢₀ ⟩

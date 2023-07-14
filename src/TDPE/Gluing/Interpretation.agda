@@ -2,8 +2,10 @@
 
 open import Categories.Category using (Category)
 
+open import Level
+
 module TDPE.Gluing.Interpretation
-  {a} (𝒰 : Set a) {ℓ e} (𝒞 : Category a ℓ e) where
+  {a} (𝒰 : Set a) {o ℓ e} (𝒞 : Category (a ⊔ o) ℓ e) where
 
 open import Categories.Functor
 

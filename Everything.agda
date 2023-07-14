@@ -10,7 +10,12 @@ import TDPE.Gluing.Categories.Category.Instance.Setoids
 import TDPE.Gluing.Categories.Functor.Properties
 import TDPE.Gluing.Contexts
 import TDPE.Gluing.Glue.Base
+import TDPE.Gluing.Glue.Cartesian
+import TDPE.Gluing.Glue.CartesianClosed
+import TDPE.Gluing.Glue.Eval
+import TDPE.Gluing.Glue.Lambda
 import TDPE.Gluing.Glue.Relation
+import TDPE.Gluing.Glue.Yoga
 import TDPE.Gluing.Interpretation
 import TDPE.Gluing.Representation
 import TDPE.Gluing.Syntax
