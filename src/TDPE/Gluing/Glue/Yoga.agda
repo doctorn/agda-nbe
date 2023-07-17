@@ -238,3 +238,13 @@ module _ Δ where
 yoga : ∀ {Δ} → 𝔦 Δ Psh.∘ ↓ Δ Psh.∘ ↑ Δ Psh.≈ 𝔦′ Δ
 yoga {Δ = 𝟙}     R.!       = !η
 yoga {Δ = Δ · A} (γ R.∷ a) = ∷-cong₂ (yoga γ) (𝒵-cong (yoga₀ a))
+
+𝔦′-id : ∀ Γ → 𝔦′.η Γ Γ ⟨$⟩ R.identity Γ S.≈ id
+𝔦′-id 𝟙       = !η
+𝔦′-id (Γ · A) =
+  ∷-congₗ (S.trans
+    (𝔦′.commute Γ (ω₁ ϵ) (Setoid.refl (𝔑𝔢.₀ Γ Γ)))
+    (S.trans ∘-identityˡ
+      (S.trans
+        (∘-congᵣ (π-cong E.identity))
+        (S.trans π-id (π-cong (𝔦′-id Γ))))))

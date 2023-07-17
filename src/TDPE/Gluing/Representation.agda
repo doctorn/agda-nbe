@@ -12,7 +12,7 @@ open import Categories.Functor using (Functor)
 open import Categories.NaturalTransformation using (NaturalTransformation; ntHelper)
 
 open import TDPE.Gluing.Contexts 𝒰
-open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; 𝒲; ω₁; ω₂; ϵ₀)
+open import TDPE.Gluing.Weakenings 𝒰 using (𝕎; 𝒲; ω₁; ω₂; ϵ₀; ϵ)
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 
 module 𝕎 = Category 𝕎
@@ -212,3 +212,7 @@ module _ (𝒪 : 𝒰ᵀ → Psh.Obj) where
 
 𝔑𝔢 : ℭ → Psh.Obj
 𝔑𝔢 = ⟨ 𝔑𝔢₀ ⟩
+
+identity : ∀ Γ → Ext 𝔑𝔢₀ Γ Γ
+identity 𝟙       = !
+identity (Γ · A) = ext 𝔑𝔢₀ (ω₁ ϵ) (identity Γ) ∷ 𝓋 𝓏
