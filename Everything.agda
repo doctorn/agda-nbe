@@ -9,6 +9,7 @@ import TDPE.Gluing.Categories.Category.Instance.Presheaves
 import TDPE.Gluing.Categories.Category.Instance.Setoids
 import TDPE.Gluing.Categories.Functor.Properties
 import TDPE.Gluing.Contexts
+import TDPE.Gluing.Embedding
 import TDPE.Gluing.Glue.Base
 import TDPE.Gluing.Glue.Cartesian
 import TDPE.Gluing.Glue.CartesianClosed
