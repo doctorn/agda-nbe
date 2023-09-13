@@ -2,6 +2,9 @@
 
 module TDPE.Gluing.Glue.Relation {a} (𝒰 : Set a) where
 
+open import Data.Unit.Polymorphic as Unit using (tt)
+open import Data.Product using (_,_; proj₁; proj₂)
+
 open import Function.Equality using (cong; _⟨$⟩_)
 
 import Relation.Binary.Reasoning.Setoid as Reasoning
@@ -45,6 +48,23 @@ private
   prj-lemma : ∀ {Δ} → prj.₀ (⟦_⟧.₀ Δ) ≡ 𝓡 Δ
   prj-lemma {𝟙}     = PE.refl
   prj-lemma {Δ · A} = PE.cong (Psh._× 𝓡₀ A) (prj-lemma {Δ})
+
+  q₀ : (Δ : ℭ) → prj.₀ (⟦_⟧.₀ Δ) Psh.⇒ Tm.₀ (gl.₀ (⟦_⟧.₀ Δ))
+  q₀ Δ = CommaObj.f (⟦_⟧.₀ Δ)
+
+  q : (Δ : ℭ) → 𝓡 Δ Psh.⇒ Tm.₀ Δ
+  q Δ = PE.subst₂ Psh._⇒_ (prj-lemma {Δ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (q₀ Δ)
+
+  q-lemma : ∀ {Δ} → q Δ Psh.≈ 𝔦 Δ Psh.∘ ↓ Δ
+  q-lemma {𝟙}     {Γ} {tt}    {tt}    tt          = !η
+  q-lemma {Δ · A} {Γ} {γ , a} {δ , b} (γ≈δ , a≈b) = begin
+      NaturalTransformation.η (q (Δ · A)) Γ ⟨$⟩ (γ , a)
+    ≈⟨ {!!} ⟩
+      (NaturalTransformation.η (q Δ) Γ ⟨$⟩ γ) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ a))
+    ≈⟨ ∷-cong₂ (q-lemma γ≈δ) (𝒵-cong (cong (𝔦₀.η A Γ Setoids.∘ ↓₀.η A Γ) a≈b)) ⟩
+      (𝔦.η Δ Γ ⟨$⟩ (↓.η Δ Γ ⟨$⟩ δ)) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ b))
+    ∎
+    where open Reasoning S.setoid
 
   gl₁ : ∀ {Δ Γ} → ⟦_⟧.₀ Δ Gl.⇒ ⟦_⟧.₀ Γ → 𝔗𝔪 Δ Γ
   gl₁ {Δ} {Γ} γ = PE.subst₂ (Category._⇒_ 𝕋𝕞) (gl-lemma {Δ}) (gl-lemma {Γ}) (gl.₁ γ)
@@ -92,7 +112,11 @@ norm {Δ} {Γ} = ↓.η Δ Γ Setoids.∘ ϕ {Δ} {Γ} Setoids.∘ prj′ {Γ} {
 theorem : ∀ {Δ Γ} {γ : 𝔗𝔪 Γ Δ} → 𝔦.η Δ Γ ⟨$⟩ (norm ⟨$⟩ γ) S.≈ γ
 theorem {Δ} {Γ} {γ} = begin
     𝔦.η Δ Γ ⟨$⟩ (↓.η Δ Γ ⟨$⟩ (v.η Γ ⟨$⟩ (↑.η Γ Γ ⟨$⟩ R.identity Γ)))
-  ≈⟨ {!!} ⟩
+  ≈⟨ S.sym (q-lemma (Setoid.refl (Functor.₀ (𝓡 Δ) Γ))) ⟩
+    NaturalTransformation.η (q Δ) Γ ⟨$⟩ (v.η Γ ⟨$⟩ (↑.η Γ Γ ⟨$⟩ R.identity Γ))
+  ≈⟨ S.sym (commute (Setoid.refl (Functor.₀ (𝓡 Γ) Γ))) ⟩
+    δ ∘ (NaturalTransformation.η (q Γ) Γ ⟨$⟩ (↑.η Γ Γ ⟨$⟩ R.identity Γ))
+  ≈⟨ ∘-congᵣ (q-lemma (Setoid.refl (Functor.₀ (𝓡 Γ) Γ))) ⟩
     δ ∘ (𝔦.η Γ Γ ⟨$⟩ (↓.η Γ Γ ⟨$⟩ (↑.η Γ Γ ⟨$⟩ R.identity Γ)))
   ≈⟨ ∘-congᵣ (yoga (Setoid.refl (𝔑𝔢.₀ Γ Γ))) ⟩
     δ ∘ (𝔦′.η Γ Γ ⟨$⟩ R.identity Γ)
@@ -109,6 +133,15 @@ theorem {Δ} {Γ} {γ} = begin
 
         v = prj′ {Γ} {Δ} ⟨$⟩ (⟦_⟧.₁ γ)
         δ = gl′ ⟨$⟩ (⟦_⟧.₁ γ)
+
+        v₀ = prj.₁ (⟦_⟧.₁ γ)
+        δ₀ = gl.₁ (⟦_⟧.₁ γ)
+
+        commute₀ : Tm.₁ δ₀ Psh.∘ q₀ Γ Psh.≈ q₀ Δ Psh.∘ v₀
+        commute₀ = Comma⇒.commute (⟦_⟧.₁ γ)
+
+        commute :  Tm.₁ δ Psh.∘ q Γ Psh.≈ q Δ Psh.∘ v
+        commute = {!commute₀!}
 
         module v = NaturalTransformation v
 

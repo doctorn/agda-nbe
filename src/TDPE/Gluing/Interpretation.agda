@@ -10,7 +10,7 @@ module TDPE.Gluing.Interpretation
 open import Categories.Functor
 
 open import TDPE.Gluing.Contexts 𝒰
-open import TDPE.Gluing.Syntax 𝒰
+open import TDPE.Gluing.Syntax 𝒰 hiding (CC; CCC)
 
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed

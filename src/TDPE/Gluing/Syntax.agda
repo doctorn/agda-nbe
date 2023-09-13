@@ -338,3 +338,6 @@ CCC = record
           ≈⟨ Λ-cong (𝒵-cong x) ⟩
             Λ f
           ∎)
+
+module CC = ContextualCartesian CC
+module CCC = ContextualCartesianClosed 𝒰 CCC
