@@ -29,6 +29,39 @@ import TDPE.Gluing.Representation 𝒰 as R
 import TDPE.Gluing.Categories.Category.Instance.Presheaves 𝕎 as Psh
 import TDPE.Gluing.Categories.Category.Instance.Setoids {a} as Setoids
 
+private
+
+  subst-lemma₁ : ∀ {Δ Δ′ Γ A γ a} (p : Δ ≡ Δ′)
+                 → PE.subst (𝔗𝔪 Γ) (PE.cong (_· A) p) (γ ∷ a) ≡ PE.subst (𝔗𝔪 Γ) p γ  ∷ a
+  subst-lemma₁ PE.refl = PE.refl
+
+  subst-lemma₂ : ∀ {Γ} {F F′ : Psh.Obj} (p : F ≡ F′)
+                 → {Δ Δ′ : ℭ} (q : Δ ≡ Δ′)
+                 → (η : F Psh.⇒ Tm.₀ Δ) {γ : Setoid.Carrier (Functor.₀ F′ Γ)}
+                 → PE.subst (𝔗𝔪 Γ) q (NaturalTransformation.η η Γ ⟨$⟩ PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym p) γ)
+                   ≡ NaturalTransformation.η (PE.subst₂ Psh._⇒_ p (PE.cong Tm.₀ q) η) Γ ⟨$⟩ γ
+  subst-lemma₂ PE.refl PE.refl η = PE.refl
+
+  subst-S-cong : ∀ {Δ Δ′ Γ} {γ δ : 𝔗𝔪 Γ Δ} (p : Δ ≡ Δ′) → γ S.≈ δ → PE.subst (𝔗𝔪 Γ) p γ S.≈ PE.subst (𝔗𝔪 Γ) p δ
+  subst-S-cong PE.refl x = x
+
+  subst-× : ∀ {F F′ : Psh.Obj} {A Γ γ a} (p : F ≡ F′)
+            → PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym (PE.cong (Psh._× 𝓡₀ A) p)) (γ , a)
+              ≡ (PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym  p) γ , a)
+  subst-× PE.refl = PE.refl
+
+  subst-∘-NT : ∀ {F F′ G G′ H H′ : Psh.Obj} {η : F Psh.⇒ G} {ϵ : G Psh.⇒ H}
+               → (p : F ≡ F′) (q : G ≡ G′) (r : H ≡ H′)
+               → PE.subst₂ Psh._⇒_ q r ϵ Psh.∘ PE.subst₂ Psh._⇒_ p q η
+                   ≡ PE.subst₂ Psh._⇒_ p r (ϵ Psh.∘ η)
+  subst-∘-NT PE.refl PE.refl PE.refl = PE.refl
+
+  subst-η-NT : ∀ {F F′ G G′ : Psh.Obj} {η : F Psh.⇒ G} {Ξ}
+               → (p : F ≡ F′) (q : G ≡ G′)
+               → NaturalTransformation.η (PE.subst₂ Psh._⇒_ p q η) Ξ
+                   ≡ PE.subst₂ Setoids._⇒_ (PE.cong₂ Functor.₀ p PE.refl) (PE.cong₂ Functor.₀ q PE.refl) (NaturalTransformation.η η Ξ)
+  subst-η-NT PE.refl PE.refl = PE.refl
+
 ⟦_⟧ = Interpretation.⟦_⟧ CCC
 module ⟦_⟧ = Functor ⟦_⟧
 
@@ -59,7 +92,18 @@ private
   q-lemma {𝟙}     {Γ} {tt}    {tt}    tt          = !η
   q-lemma {Δ · A} {Γ} {γ , a} {δ , b} (γ≈δ , a≈b) = begin
       NaturalTransformation.η (q (Δ · A)) Γ ⟨$⟩ (γ , a)
-    ≈⟨ {!!} ⟩
+    ≈⟨ S.sym (Setoid.reflexive S.setoid (subst-lemma₂ (prj-lemma {Δ · A}) (PE.cong (_· A) (gl-lemma {Δ})) (q₀ (Δ · A)))) ⟩
+      PE.subst (𝔗𝔪 Γ) (PE.cong (_· A) (gl-lemma {Δ}))
+        (NaturalTransformation.η (q₀ (Δ · A)) Γ ⟨$⟩ (PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym (prj-lemma {Δ · A})) (γ , a)))
+    ≡⟨ PE.cong (PE.subst (𝔗𝔪 Γ) (PE.cong (_· A) (gl-lemma {Δ}))) (PE.cong (NaturalTransformation.η (q₀ (Δ · A)) Γ ⟨$⟩_) (subst-× {A = A} (prj-lemma {Δ}))) ⟩
+      PE.subst (𝔗𝔪 Γ) (PE.cong (_· A) (gl-lemma {Δ}))
+        ((NaturalTransformation.η (q₀ Δ) Γ ⟨$⟩
+          (PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym (prj-lemma {Δ})) γ)) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ a)))
+    ≡⟨ subst-lemma₁ (gl-lemma {Δ}) ⟩
+      PE.subst (𝔗𝔪 Γ) (gl-lemma {Δ})
+        (NaturalTransformation.η (q₀ Δ) Γ ⟨$⟩
+          (PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym (prj-lemma {Δ})) γ)) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ a))
+    ≈⟨ ∷-congₗ (Setoid.reflexive S.setoid (subst-lemma₂ (prj-lemma {Δ}) (gl-lemma {Δ}) (q₀ Δ))) ⟩
       (NaturalTransformation.η (q Δ) Γ ⟨$⟩ γ) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ a))
     ≈⟨ ∷-cong₂ (q-lemma γ≈δ) (𝒵-cong (cong (𝔦₀.η A Γ Setoids.∘ ↓₀.η A Γ) a≈b)) ⟩
       (𝔦.η Δ Γ ⟨$⟩ (↓.η Δ Γ ⟨$⟩ δ)) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ b))
@@ -129,21 +173,50 @@ theorem {Δ} {Γ} {γ} = begin
   ≈⟨ {!!} ⟩
     γ
   ∎
-  where open Reasoning S.setoid
-
-        v = prj′ {Γ} {Δ} ⟨$⟩ (⟦_⟧.₁ γ)
+  where v = prj′ {Γ} {Δ} ⟨$⟩ (⟦_⟧.₁ γ)
         δ = gl′ ⟨$⟩ (⟦_⟧.₁ γ)
+
+        module v = NaturalTransformation v
 
         v₀ = prj.₁ (⟦_⟧.₁ γ)
         δ₀ = gl.₁ (⟦_⟧.₁ γ)
+
+        module v₀ = NaturalTransformation v₀
 
         commute₀ : Tm.₁ δ₀ Psh.∘ q₀ Γ Psh.≈ q₀ Δ Psh.∘ v₀
         commute₀ = Comma⇒.commute (⟦_⟧.₁ γ)
 
         commute :  Tm.₁ δ Psh.∘ q Γ Psh.≈ q Δ Psh.∘ v
-        commute = {!commute₀!}
+        commute {Ξ} {x} {y} x≈y = begin
+            NaturalTransformation.η
+              (Tm.₁ (PE.subst₂ 𝔗𝔪 (gl-lemma {Γ}) (gl-lemma {Δ}) δ₀)
+                Psh.∘ (PE.subst₂ Psh._⇒_ (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Γ})) (q₀ Γ))) Ξ ⟨$⟩ x
+          ≡⟨ {!!} ⟩
+            NaturalTransformation.η
+              (PE.subst₂ Psh._⇒_ (PE.cong Tm.₀ (gl-lemma {Γ})) (PE.cong Tm.₀ (gl-lemma {Δ})) (Tm.₁ δ₀)
+                Psh.∘ (PE.subst₂ Psh._⇒_ (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Γ})) (q₀ Γ))) Ξ ⟨$⟩ x
+          ≡⟨ PE.cong (λ η → NaturalTransformation.η η Ξ ⟨$⟩ x) (subst-∘-NT (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Γ})) (PE.cong Tm.₀ (gl-lemma {Δ}))) ⟩
+            NaturalTransformation.η (PE.subst₂ Psh._⇒_ (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (Tm.₁ δ₀ Psh.∘ q₀ Γ)) Ξ ⟨$⟩ x
+          ≡⟨ PE.cong (_⟨$⟩ x) (subst-η-NT (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ}))) ⟩
+            PE.subst₂ Setoids._⇒_
+              (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
+              (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
+              (NaturalTransformation.η (Tm.₁ δ₀ Psh.∘ q₀ Γ) Ξ) ⟨$⟩ x
+          ≈⟨ {!!} ⟩
+            PE.subst₂ Setoids._⇒_
+              (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
+              (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
+              (NaturalTransformation.η (q₀ Δ Psh.∘ v₀) Ξ) ⟨$⟩ y
+          ≡⟨ PE.sym (PE.cong (_⟨$⟩ y) (subst-η-NT (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})))) ⟩
+            NaturalTransformation.η (PE.subst₂ Psh._⇒_ (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (q₀ Δ Psh.∘ v₀)) Ξ ⟨$⟩ y
+          ≡⟨ PE.sym (PE.cong (λ η → NaturalTransformation.η η Ξ ⟨$⟩ y) (subst-∘-NT (prj-lemma {Γ}) (prj-lemma {Δ}) (PE.cong Tm.₀ (gl-lemma {Δ}))))  ⟩
+            NaturalTransformation.η
+              (PE.subst₂ Psh._⇒_ (prj-lemma {Δ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (q₀ Δ)
+                Psh.∘ PE.subst₂ Psh._⇒_ (prj-lemma {Γ}) (prj-lemma {Δ}) v₀) Ξ ⟨$⟩ y
+          ∎
+          where open Reasoning S.setoid
 
-        module v = NaturalTransformation v
+        open Reasoning S.setoid
 
 complete : ∀ {Δ Γ} {γ δ : 𝔗𝔪 Γ Δ}
            → 𝔦.η Δ Γ ⟨$⟩ (norm ⟨$⟩ γ) S.≈ 𝔦.η Δ Γ ⟨$⟩ (norm ⟨$⟩ δ)
