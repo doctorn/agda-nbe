@@ -7,6 +7,8 @@ import TDPE.Gluing.Categories.Category.ContextualCartesian
 import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
 import TDPE.Gluing.Categories.Category.Instance.Presheaves
 import TDPE.Gluing.Categories.Category.Instance.Setoids
+import TDPE.Gluing.Categories.Functor.ContextualCartesian
+import TDPE.Gluing.Categories.Functor.ContextualCartesianClosed
 import TDPE.Gluing.Categories.Functor.Properties
 import TDPE.Gluing.Contexts
 import TDPE.Gluing.Embedding
