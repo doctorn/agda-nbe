@@ -62,6 +62,13 @@ private
                    ≡ PE.subst₂ Setoids._⇒_ (PE.cong₂ Functor.₀ p PE.refl) (PE.cong₂ Functor.₀ q PE.refl) (NaturalTransformation.η η Ξ)
   subst-η-NT PE.refl PE.refl = PE.refl
 
+  subst-cong-NT : ∀ {F F′ G G′ : Psh.Obj} {η η′ : F Psh.⇒ G} {Ξ}
+                  → (p : F ≡ F′) (q : G ≡ G′)
+                  → η Psh.≈ η′
+                  → PE.subst₂ Setoids._⇒_ (PE.cong₂ Functor.₀ p PE.refl) (PE.cong₂ Functor.₀ q PE.refl) (NaturalTransformation.η η Ξ)
+                      Setoids.≈ PE.subst₂ Setoids._⇒_ (PE.cong₂ Functor.₀ p PE.refl) (PE.cong₂ Functor.₀ q PE.refl) (NaturalTransformation.η η′ Ξ)
+  subst-cong-NT PE.refl PE.refl η≈η′ = η≈η′
+
   -- FIXME(@doctorn) this should generalise to arbitrary functors
   subst-F : ∀ {Δ Δ′ Γ Γ′} (p : Δ ≡ Δ′) (q : Γ ≡ Γ′) (γ : 𝔗𝔪 Δ Γ)
             → Tm.₁ (PE.subst₂ 𝔗𝔪 p q γ) ≡ PE.subst₂ Psh._⇒_ (PE.cong Tm.₀ p) (PE.cong Tm.₀ q) (Tm.₁ γ)
@@ -188,9 +195,6 @@ theorem {Δ} {Γ} {γ} = begin
 
         module v₀ = NaturalTransformation v₀
 
-        commute₀ : Tm.₁ δ₀ Psh.∘ q₀ Γ Psh.≈ q₀ Δ Psh.∘ v₀
-        commute₀ = Comma⇒.commute (⟦_⟧.₁ γ)
-
         commute :  Tm.₁ δ Psh.∘ q Γ Psh.≈ q Δ Psh.∘ v
         commute {Ξ} {x} {y} x≈y = begin
             NaturalTransformation.η
@@ -207,7 +211,7 @@ theorem {Δ} {Γ} {γ} = begin
               (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
               (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
               (NaturalTransformation.η (Tm.₁ δ₀ Psh.∘ q₀ Γ) Ξ) ⟨$⟩ x
-          ≈⟨ {!!} ⟩
+          ≈⟨ cong (subst-cong-NT (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})) Comma⇒.commute (⟦_⟧.₁ γ)) x≈y ⟩
             PE.subst₂ Setoids._⇒_
               (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
               (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
