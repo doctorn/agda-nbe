@@ -1,4 +1,5 @@
 *.agdai
+*.agda~
 MAlonzo/**
 _build/
 html/

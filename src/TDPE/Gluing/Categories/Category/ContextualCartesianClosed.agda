@@ -16,7 +16,7 @@ record ContextualCartesianClosed : Set (a ⊔ levelOfTerm 𝒞) where
   field
     cartesian : ContextualCartesian (𝒰ᵀ)
 
-  open ContextualCartesian cartesian
+  open ContextualCartesian cartesian public
 
   field
     Λ : ∀ {Γ A B} → Γ · A ⇒ [ B ] → Γ ⇒ [ A ^ B ]
