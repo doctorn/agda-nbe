@@ -211,7 +211,7 @@ theorem {Δ} {Γ} {γ} = begin
               (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
               (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
               (NaturalTransformation.η (Tm.₁ δ₀ Psh.∘ q₀ Γ) Ξ) ⟨$⟩ x
-          ≈⟨ subst-cong-NT (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (Comma⇒.commute (⟦_⟧.₁ γ)) x≈y ⟩
+          ≈⟨ subst-cong-NT {η = Tm.₁ δ₀ Psh.∘ q₀ Γ} {η′ = q₀ Δ Psh.∘ v₀} (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (Comma⇒.commute (⟦_⟧.₁ γ)) x≈y ⟩
             PE.subst₂ Setoids._⇒_
               (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
               (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
