@@ -270,6 +270,7 @@ CC = record
   ; _·_ = _·_
   ; π = π id
   ; 𝓏 = ! ∷ 𝓏
+  ; 𝓏-id = S.refl
   ; extensions = record
     { ⟨_,_⟩ = ⟨_,_⟩
     ; project₁ = project₁

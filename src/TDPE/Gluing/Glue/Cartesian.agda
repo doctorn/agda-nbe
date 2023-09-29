@@ -81,6 +81,7 @@ CC = record
     ; commute = λ { {Γ} {γ₁ , a₁} {γ₂ , a₂} (γ₁≈γ₂ , a₁≈a₂) →
       ∷-congᵣ (C.trans v𝓏 (𝒵-cong (cong (NaturalTransformation.η (𝔦₀ A Psh.∘ ↓₀ A) Γ) a₁≈a₂))) }
     }
+  ; 𝓏-id = (λ x → x) , S.refl
   ; extensions = λ {Γ} {A} → record
     { ⟨_,_⟩ = λ {Δ} γ a → record
       { g = Psh.⟨ Comma⇒.g γ , Psh.counit Psh.∘ Comma⇒.g a ⟩

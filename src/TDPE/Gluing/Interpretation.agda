@@ -10,7 +10,7 @@ module TDPE.Gluing.Interpretation
 open import Categories.Functor
 
 open import TDPE.Gluing.Contexts 𝒰
-open import TDPE.Gluing.Syntax 𝒰 hiding (CC; CCC)
+open import TDPE.Gluing.Syntax 𝒰 as Syntax hiding (CC; CCC)
 
 open import TDPE.Gluing.Categories.Category.ContextualCartesian
 open import TDPE.Gluing.Categories.Category.ContextualCartesianClosed
@@ -33,7 +33,6 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
 
     open Category 𝒞 hiding (_⇒_)
     open HomReasoning
-
 
     module _ {Δ Γ} where open IsEquivalence (𝒞.equiv {Δ} {Γ}) public
 
@@ -154,6 +153,9 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
             trans assoc (∘-resp-≈ʳ (sym (⟦_⟧-homomorphism {δ = δ} {γ})))
           II (p-π₀ {γ = γ} {f}) = trans assoc (∘-resp-≈ʳ (sym (⟦_⟧-π-lemma {γ = γ})))
 
+  ⟦_⟧C-resp-≈ : ∀ {γ δ : 𝔗𝔪₀ Γ A} → γ C.≈ δ → ⟦ γ ⟧C ≈ ⟦ δ ⟧C
+  ⟦_⟧C-resp-≈ q = trans (sym CC.Ext.project₂) (trans (∘-resp-≈ʳ (⟦_⟧-resp-≈ (∷-congᵣ {γ = !} q))) CC.Ext.project₂)
+
   ⟦_⟧ : Functor 𝕋𝕞 𝒞
   ⟦_⟧ = record
     { F₀ = ⟦_⟧₀
@@ -162,3 +164,48 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
     ; homomorphism = λ {_} {_} {_} {f} {g} → ⟦_⟧-homomorphism {δ = f} {g}
     ; F-resp-≈ = ⟦_⟧-resp-≈
     }
+
+  open import TDPE.Gluing.Categories.Functor.ContextualCartesian {𝒞 = 𝕋𝕞} {𝒟 = 𝒞}
+  open import TDPE.Gluing.Categories.Functor.ContextualCartesianClosed {𝒞 = 𝕋𝕞} {𝒟 = 𝒞}
+  import Relation.Binary.PropositionalEquality as PE
+
+  ⟦_⟧-CC : CCFunctor 𝒰ᵀ Syntax.CC CCC.cartesian ⟦_⟧
+  ⟦_⟧-CC = record
+    { terminal-preserving = PE.refl
+    ; ·-preserving = PE.refl
+    ; π-preserving =
+      λ {Γ} → trans (⟦_⟧-π-lemma {γ = Syntax.id {Γ}}) (trans (𝒞.∘-resp-≈ˡ (⟦_⟧-identity {Γ})) 𝒞.identityˡ)
+    ; 𝓏-preserving =
+      λ {Γ} {A} →
+        CC.Ext.unique (sym (CC.!-unique _)) (trans (∘-resp-≈ˡ CC.𝓏-id) 𝒞.identityˡ)
+    }
+
+  ⟦_⟧-CCC : CCCFunctor 𝒰 Syntax.CCC CCC ⟦_⟧
+  ⟦_⟧-CCC = record
+    { cartesian = ⟦_⟧-CC
+    ; Λ-preserving = Λ-preserving
+    ; eval-preserving = eval-preserving
+    }
+    where Λ-preserving : (h : 𝔗𝔪 (Γ · A) (𝟙 · B)) → CC.⟨ CC.! , CCC.Λ ⟦ 𝒵 h ⟧C ⟩ ≈ CCC.Λ ⟦ h ⟧S
+          Λ-preserving h = begin
+              CC.⟨ CC.! , CCC.Λ ⟦ 𝒵 h ⟧C ⟩
+            ≈⟨ CC.⟨!, CCC.Λ ⟦ 𝒵 h ⟧C ⟩-id ⟩
+              CCC.Λ ⟦ 𝒵 h ⟧C
+            ≈⟨ CCC.Λ-cong (⟦_⟧C-resp-≈ {γ = 𝒵 h} {δ = 𝓏 [ h ]} (C.sym v𝒵)) ⟩
+              CCC.Λ ⟦ 𝓏 [ h ] ⟧C
+            ≈⟨ CCC.Λ-cong (trans (𝒞.∘-resp-≈ˡ CC.𝓏-id) 𝒞.identityˡ) ⟩
+              CCC.Λ ⟦ h ⟧S
+            ∎
+
+          eval-preserving : CC.⟨ CC.! , CCC.eval 𝒞.∘ CC.⟨ CC.𝓏 𝒞.∘ CC.π , CC.𝓏 ⟩ ⟩ ≈ CCC.eval {A} {B}
+          eval-preserving = begin
+              CC.⟨ CC.! , CCC.eval 𝒞.∘ CC.⟨ CC.𝓏 𝒞.∘ CC.π , CC.𝓏 ⟩ ⟩
+            ≈⟨
+              CC.Ext.⟨⟩-cong₂ refl
+                (trans (𝒞.∘-resp-≈ʳ (CC.Ext.unique (trans 𝒞.identityʳ (trans (sym 𝒞.identityˡ) (𝒞.∘-resp-≈ˡ (sym CC.𝓏-id)))) 𝒞.identityʳ))
+                𝒞.identityʳ)
+            ⟩
+              CC.⟨ CC.! , CCC.eval ⟩
+            ≈⟨ CC.⟨!, CCC.eval ⟩-id ⟩
+              CCC.eval
+            ∎

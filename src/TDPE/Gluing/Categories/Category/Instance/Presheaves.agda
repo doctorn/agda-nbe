@@ -403,6 +403,7 @@ module _ {a} {𝒰 : Set a} where
       ; _·_ = λ Γ A → Γ × (ι A)
       ; π = λ {Γ} {A} → π {Γ} {ι A}
       ; 𝓏 = λ {Γ} {A} → unit ∘ 𝓏 {Γ} {ι A}
+      ; 𝓏-id = λ x → x
       ; extensions = record
         { ⟨_,_⟩ = λ {Δ} γ a → ⟨_,_⟩ {Δ = Δ} γ (counit ∘ a)
         ; project₁ = λ {Δ} {γ} {_} x → cong (NaturalTransformation.η γ _) x
