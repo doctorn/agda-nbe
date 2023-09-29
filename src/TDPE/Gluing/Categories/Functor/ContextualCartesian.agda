@@ -28,7 +28,7 @@ module _
   record CCFunctor : Set (a ⊔ levelOfTerm F) where
 
     field
-      terminal-preserving : F.₀ 𝒞-CC.Term.⊤ ≡ 𝒟-CC.Term.⊤
+      terminal-preserving : F.₀ 𝒞-CC.⊤ ≡ 𝒟-CC.⊤
       ·-preserving : ∀ {Γ A} → F.₀ (Γ 𝒞-CC.· A) ≡ F.₀ Γ 𝒟-CC.· A
 
     []-preserving : ∀ {A} → F.₀ 𝒞-CC.[ A ] ≡ 𝒟-CC.[ A ]

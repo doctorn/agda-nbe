@@ -7,7 +7,7 @@ open import Level
 module TDPE.Gluing.Interpretation
   {a} (𝒰 : Set a) {o ℓ e} (𝒞 : Category (a ⊔ o) ℓ e) where
 
-open import Categories.Functor
+open import Categories.Functor using (Functor)
 
 open import TDPE.Gluing.Contexts 𝒰
 open import TDPE.Gluing.Syntax 𝒰 as Syntax hiding (CC; CCC)
@@ -31,7 +31,7 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
     module CCC = ContextualCartesianClosed CCC
     module CC = ContextualCartesian CCC.cartesian
 
-    open Category 𝒞 hiding (_⇒_)
+    open Category 𝒞 hiding (_⇒_; _∘_; id)
     open HomReasoning
 
     module _ {Δ Γ} where open IsEquivalence (𝒞.equiv {Δ} {Γ}) public
@@ -167,7 +167,7 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
 
   open import TDPE.Gluing.Categories.Functor.ContextualCartesian {𝒞 = 𝕋𝕞} {𝒟 = 𝒞}
   open import TDPE.Gluing.Categories.Functor.ContextualCartesianClosed {𝒞 = 𝕋𝕞} {𝒟 = 𝒞}
-  import Relation.Binary.PropositionalEquality as PE
+  open import Relation.Binary.PropositionalEquality as PE using (_≡_)
 
   ⟦_⟧-CC : CCFunctor 𝒰ᵀ Syntax.CC CCC.cartesian ⟦_⟧
   ⟦_⟧-CC = record
@@ -209,3 +209,52 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
             ≈⟨ CC.⟨!, CCC.eval ⟩-id ⟩
               CCC.eval
             ∎
+
+  module _ {F : Functor 𝕋𝕞 𝒞} (F-CCC : CCCFunctor 𝒰 Syntax.CCC CCC F) where
+
+    private
+      module F = Functor F
+      module F-CCC = CCCFunctor F-CCC
+
+    ⟦_⟧-universal₀ : F.₀ Γ ≡ ⟦ Γ ⟧₀
+    ⟦_⟧-universal₀ {𝟙}     = F-CCC.terminal-preserving
+    ⟦_⟧-universal₀ {Γ · A} = PE.trans F-CCC.·-preserving (PE.cong (CC._· A) ⟦_⟧-universal₀)
+
+    ⟦_⟧C-universal₁ : (γ : 𝔗𝔪₀ Γ A) → F.₁ (! ∷ γ) ≈ PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ γ ⟧C
+    ⟦ 𝓏       ⟧C-universal₁ = begin
+        F.₁ (! ∷ 𝓏)
+      ≈⟨ F-CCC.𝓏-preserving ⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym F-CCC.·-preserving) (PE.sym F-CCC.[]-preserving) CC.𝓏
+      ≡⟨ {!!} ⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ 𝓏 ⟧C
+      ∎
+    ⟦ p γ     ⟧C-universal₁ = begin
+        F.₁ (! ∷ p γ)
+      ≈⟨ F.F-resp-≈ (S.trans (∷-congᵣ (p-cong (C.sym sb-id))) (S.sym π-lemma)) ⟩
+        F.₁ ((! ∷ γ) Syntax.∘ Syntax.π Syntax.id)
+      ≈⟨ F.homomorphism ⟩
+        F.₁ (! ∷ γ) 𝒞.∘ F.₁ (Syntax.π Syntax.id)
+      ≈⟨ 𝒞.∘-resp-≈ ⟦ γ ⟧C-universal₁ F-CCC.π-preserving ⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ γ ⟧C 𝒞.∘ PE.subst₂ 𝒞._⇒_ (PE.sym F-CCC.·-preserving) PE.refl CC.π
+      ≈⟨ {!!} ⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) (⟦ γ ⟧C 𝒞.∘ CC.π)
+      ≡⟨⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ p γ ⟧C
+      ∎
+    ⟦ Λ f     ⟧C-universal₁ = begin
+        F.₁ (! ∷ Λ f)
+      ≈⟨ F-CCC.Λ-preserving (! ∷ f) ⟩
+        PE.subst₂ 𝒞._⇒_ PE.refl (PE.sym F-CCC.[]-preserving) (CCC.Λ (PE.subst₂ 𝒞._⇒_ F-CCC.·-preserving F-CCC.[]-preserving (F.₁ (! ∷ f))))
+      ≈⟨ {!!} ⟩
+        PE.subst₂ 𝒞._⇒_ PE.refl (PE.sym F-CCC.[]-preserving) (CCC.Λ (PE.subst₂ 𝒞._⇒_ (PE.cong (CC._· _) (PE.sym ⟦_⟧-universal₀)) PE.refl ⟦ f ⟧C))
+      ≈⟨ {!!} ⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) (CCC.Λ ⟦ f ⟧C)
+      ≡⟨⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ Λ f ⟧C
+      ∎
+    ⟦ f ⦅ x ⦆ ⟧C-universal₁ = {!!}
+    ⟦ a [ γ ] ⟧C-universal₁ = {!!}
+
+    ⟦_⟧-universal₁ : (γ : 𝔗𝔪 Δ Γ) → PE.subst₂ 𝒞._⇒_ (⟦_⟧-universal₀ {Δ}) (⟦_⟧-universal₀ {Γ}) (F.₁ γ) ≈ ⟦ γ ⟧S
+    ⟦ !     ⟧-universal₁ = sym (CC.!-unique _)
+    ⟦ γ ∷ a ⟧-universal₁ = sym (CC.Ext.unique {!!} {!!})
