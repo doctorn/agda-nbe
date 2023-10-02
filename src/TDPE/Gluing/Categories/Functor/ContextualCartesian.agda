@@ -25,6 +25,8 @@ module _
     module 𝒟-CC = ContextualCartesian 𝒟-CC
     module F = Functor F
 
+  open import TDPE.Gluing.Transport 𝒟
+
   record CCFunctor : Set (a ⊔ levelOfTerm F) where
 
     field
@@ -37,7 +39,7 @@ module _
     field
       π-preserving : ∀ {Γ A}
                      → F.₁ (𝒞-CC.π {Γ} {A})
-                         𝒟.≈ PE.subst₂ 𝒟._⇒_ (PE.sym ·-preserving) PE.refl (𝒟-CC.π {F.₀ Γ} {A})
+                         𝒟.≈ transport′ ·-preserving PE.refl (𝒟-CC.π {F.₀ Γ} {A})
       𝓏-preserving : ∀ {Γ A}
                      → F.₁ (𝒞-CC.𝓏 {Γ} {A})
-                         𝒟.≈ PE.subst₂ 𝒟._⇒_ (PE.sym ·-preserving) (PE.sym []-preserving) (𝒟-CC.𝓏 {F.₀ Γ} {A})
+                         𝒟.≈ transport′ ·-preserving []-preserving (𝒟-CC.𝓏 {F.₀ Γ} {A})

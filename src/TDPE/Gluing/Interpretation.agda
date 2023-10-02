@@ -216,11 +216,73 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
       module F = Functor F
       module F-CCC = CCCFunctor F-CCC
 
-    ⟦_⟧-universal₀ : F.₀ Γ ≡ ⟦ Γ ⟧₀
-    ⟦_⟧-universal₀ {𝟙}     = F-CCC.terminal-preserving
-    ⟦_⟧-universal₀ {Γ · A} = PE.trans F-CCC.·-preserving (PE.cong (CC._· A) ⟦_⟧-universal₀)
+      I : F.₀ Γ ≡ ⟦ Γ ⟧₀
+      I {𝟙}     = F-CCC.terminal-preserving
+      I {Γ · A} = PE.trans F-CCC.·-preserving (PE.cong (CC._· A) I)
 
-    ⟦_⟧C-universal₁ : (γ : 𝔗𝔪₀ Γ A) → F.₁ (! ∷ γ) ≈ PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ γ ⟧C
+      open import TDPE.Gluing.Transport 𝒞
+
+      ⟦_⟧C-universal : (γ : 𝔗𝔪₀ Γ A) → F.₁ (! ∷ γ) ≈ transport′ I I ⟦ γ ⟧C
+      ⟦_⟧S-universal : (γ : 𝔗𝔪 Δ Γ) → F.₁ γ ≈ transport′ I I ⟦ γ ⟧S
+
+
+      ⟦_⟧C-universal = {!!}
+
+      ⟦ !     ⟧S-universal = flip-transport {p = I} {I} (F.₁ !) CC.! (sym (CC.!-unique _))
+      ⟦_⟧S-universal {Δ} {Γ · A} (γ ∷ a) = begin
+          F.₁ (γ ∷ a)
+        ≈⟨ flip-transport {p = I} {I} (F.₁ (γ ∷ a)) CC.⟨ ⟦ γ ⟧S , ⟦ a ⟧C ⟩ (sym (CC.Ext.unique unique-π unique-𝓏)) ⟩
+          transport′ I I (CC.⟨ ⟦ γ ⟧S , ⟦ a ⟧C ⟩)
+        ∎
+        where transport-π : ∀ {Γ Γ'} {A} (p : Γ ≡ Γ') → CC.π {Γ'} {A} ≡ transport (PE.cong (CC._· A) p) p CC.π
+              transport-π PE.refl = PE.refl
+
+              transport-𝓏 : ∀ {Γ Γ'} {A} (p : Γ ≡ Γ') → CC.𝓏 {Γ'} {A} ≡ transport (PE.cong (CC._· A) p) PE.refl CC.𝓏
+              transport-𝓏 PE.refl = PE.refl
+
+              unique-π : CC.π 𝒞.∘ transport I I (F.₁ (γ ∷ a)) ≈ ⟦ γ ⟧S
+              unique-π = begin
+                  CC.π 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≈⟨ 𝒞.∘-resp-≈ˡ (reflexive (transport-π I)) ⟩
+                  transport (PE.cong (CC._· A) (I {Γ})) I CC.π 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≈⟨ 𝒞.∘-resp-≈ˡ (sym (transport-≈ {p = PE.cong (CC._· _) I} {I} (transport F-CCC.·-preserving PE.refl (F.₁ (π id))) CC.π (flip-transport′ (F.₁ (π id)) CC.π F-CCC.π-preserving))) ⟩
+                  transport (PE.cong (CC._· A) (I {Γ})) I (transport F-CCC.·-preserving PE.refl (F.₁ (π id))) 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≈⟨ 𝒞.∘-resp-≈ˡ (reflexive (transport-trans {p₁ = F-CCC.·-preserving} {PE.cong (CC._· _) I} {PE.refl} {I} (F.₁ (π id)))) ⟩
+                  transport I I (F.₁ (π id)) 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≡⟨ transport-∘ (F.₁ (π id)) (F.₁ (γ ∷ a)) ⟩
+                  transport I I (F.₁ (π id) 𝒞.∘ F.₁ (γ ∷ a))
+                ≈⟨ transport-≈ (F.₁ (π id) 𝒞.∘ F.₁ (γ ∷ a)) (F.₁ (π id ∘ (γ ∷ a))) (sym F.homomorphism) ⟩
+                  transport I I (F.₁ (π id ∘ (γ ∷ a)))
+                ≈⟨ transport-≈ (F.₁ (π id ∘ (γ ∷ a))) (F.₁ γ) (F.F-resp-≈ πβ′) ⟩
+                  transport I I (F.₁ γ)
+                ≈⟨ flip-transport′ {p = I} {I} (F.₁ γ) ⟦ γ ⟧S (⟦ γ ⟧S-universal) ⟩
+                  ⟦ γ ⟧S
+                ∎
+
+              unique-𝓏 : CC.𝓏 𝒞.∘ transport I I (F.₁ (γ ∷ a)) ≈ ⟦ a ⟧C
+              unique-𝓏 = begin
+                  CC.𝓏 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≈⟨ 𝒞.∘-resp-≈ˡ (reflexive (transport-𝓏 I)) ⟩
+                  transport (PE.cong (CC._· A) (I {Γ})) PE.refl CC.𝓏 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≈⟨ 𝒞.∘-resp-≈ˡ (sym (transport-≈ {p = PE.cong (CC._· A) (I {Γ})} {PE.refl} (transport F-CCC.·-preserving F-CCC.[]-preserving (F.₁ (! ∷ 𝓏))) CC.𝓏 (flip-transport′ (F.₁ (! ∷ 𝓏)) CC.𝓏 F-CCC.𝓏-preserving))) ⟩
+                  transport (PE.cong (CC._· A) (I {Γ})) PE.refl (transport F-CCC.·-preserving F-CCC.[]-preserving (F.₁ (! ∷ 𝓏))) 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≈⟨ 𝒞.∘-resp-≈ˡ (reflexive (transport-trans {p₁ = F-CCC.·-preserving} {PE.cong (CC._· A) I} {F-CCC.[]-preserving} {PE.refl} (F.₁ (! ∷ 𝓏)))) ⟩
+                  transport I (PE.trans F-CCC.[]-preserving PE.refl) (F.₁ (! ∷ 𝓏)) 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≈⟨ 𝒞.∘-resp-≈ˡ (reflexive (transport-≡₂ (F.₁ (! ∷ 𝓏)) PE.refl (trans-refl F-CCC.[]-preserving))) ⟩
+                  transport I I (F.₁ (! ∷ 𝓏)) 𝒞.∘ transport I I (F.₁ (γ ∷ a))
+                ≡⟨ transport-∘ (F.₁ (! ∷ 𝓏)) (F.₁ (γ ∷ a)) ⟩
+                  transport I I (F.₁ (! ∷ 𝓏) 𝒞.∘ F.₁ (γ ∷ a))
+                ≈⟨ transport-≈ (F.₁ (! ∷ 𝓏) 𝒞.∘ F.₁ (γ ∷ a)) (F.₁ ((! ∷ 𝓏) ∘ (γ ∷ a))) (sym F.homomorphism) ⟩
+                  transport I I (F.₁ ((! ∷ 𝓏) ∘ (γ ∷ a)))
+                ≈⟨ transport-≈ (F.₁ (! ∷ (𝓏 [ γ ∷ a ]))) (F.₁ (! ∷ a)) (F.F-resp-≈ (∷-congᵣ v𝓏)) ⟩
+                  transport I I (F.₁ (! ∷ a))
+                ≈⟨ flip-transport′ {p = I} {I} (F.₁ (! ∷ a)) ⟦ a ⟧C (⟦ a ⟧C-universal) ⟩
+                  ⟦ a ⟧C
+                ∎
+
+    ⟦_⟧-univeral = ⟦_⟧S-universal
+
+{-
     ⟦ 𝓏       ⟧C-universal₁ = begin
         F.₁ (! ∷ 𝓏)
       ≈⟨ F-CCC.𝓏-preserving ⟩
@@ -236,7 +298,7 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
         F.₁ (! ∷ γ) 𝒞.∘ F.₁ (Syntax.π Syntax.id)
       ≈⟨ 𝒞.∘-resp-≈ ⟦ γ ⟧C-universal₁ F-CCC.π-preserving ⟩
         PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ γ ⟧C 𝒞.∘ PE.subst₂ 𝒞._⇒_ (PE.sym F-CCC.·-preserving) PE.refl CC.π
-      ≈⟨ {!!} ⟩
+      ≡⟨ {!!} ⟩
         PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) (⟦ γ ⟧C 𝒞.∘ CC.π)
       ≡⟨⟩
         PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ p γ ⟧C
@@ -252,9 +314,20 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
       ≡⟨⟩
         PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) ⟦ Λ f ⟧C
       ∎
-    ⟦ f ⦅ x ⦆ ⟧C-universal₁ = {!!}
+    ⟦ f ⦅ x ⦆ ⟧C-universal₁ = begin
+        F.₁ (! ∷ f ⦅ x ⦆)
+      ≈⟨ F.F-resp-≈ (S.sym {!!}) ⟩
+        F.₁ ((! ∷ p 𝓏 ⦅ 𝓏 ⦆) ∘ (! ∷ f ∷ x))
+      ≈⟨ F.homomorphism ⟩
+        F.₁ (! ∷ p 𝓏 ⦅ 𝓏 ⦆) 𝒞.∘ F.₁ (! ∷ f ∷ x)
+      ≈⟨ 𝒞.∘-resp-≈ F-CCC.eval-preserving ⟦ ! ∷ f ∷ x ⟧-universal₁ ⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) CCC.eval
+          𝒞.∘ PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) CC.⟨ CC.⟨ CC.! , ⟦ f ⟧C ⟩ , ⟦ x ⟧C ⟩
+      ≈⟨ {!!} ⟩
+        PE.subst₂ 𝒞._⇒_ (PE.sym ⟦_⟧-universal₀) (PE.sym ⟦_⟧-universal₀) (CCC.eval 𝒞.∘ CC.⟨ ⟦ f ⟧C , ⟦ x ⟧C ⟩)
+      ∎
     ⟦ a [ γ ] ⟧C-universal₁ = {!!}
 
-    ⟦_⟧-universal₁ : (γ : 𝔗𝔪 Δ Γ) → PE.subst₂ 𝒞._⇒_ (⟦_⟧-universal₀ {Δ}) (⟦_⟧-universal₀ {Γ}) (F.₁ γ) ≈ ⟦ γ ⟧S
-    ⟦ !     ⟧-universal₁ = sym (CC.!-unique _)
-    ⟦ γ ∷ a ⟧-universal₁ = sym (CC.Ext.unique {!!} {!!})
+    ⟦ !     ⟧-universal₁ = {!!}
+    ⟦ γ ∷ a ⟧-universal₁ = {! CC.Ext.unique {!!} {!!} !}
+-}
