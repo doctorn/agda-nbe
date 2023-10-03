@@ -58,7 +58,7 @@ private
       transport′ ℰ (PE.cong G.₀ F-CC.·-preserving) (PE.cong G.₀ F-CC.[]-preserving) (transport′ ℰ G-CC.·-preserving G-CC.[]-preserving ℰ-CC.𝓏)
     ≡⟨ transport′-trans ℰ {p₁ = PE.cong G.₀ F-CC.·-preserving} {G-CC.·-preserving} {PE.cong G.₀ F-CC.[]-preserving} {G-CC.[]-preserving} ℰ-CC.𝓏 ⟩
       transport′ ℰ ·-preserving (PE.trans (PE.cong G.₀ F-CC.[]-preserving) G-CC.[]-preserving) ℰ-CC.𝓏
-    ≡⟨ transport-≡₂ ℰ ℰ-CC.𝓏 PE.refl (PE.cong PE.sym {!!}) ⟩
+    ≡⟨ transport-≡₂ ℰ ℰ-CC.𝓏 PE.refl (PE.cong PE.sym []-lemma) ⟩
       transport′ ℰ ·-preserving _ ℰ-CC.𝓏
     ∎
   }
@@ -69,10 +69,25 @@ private
         module 𝒟-CC = ContextualCartesian 𝒟-CC
         module ℰ-CC = ContextualCartesian ℰ-CC
 
-        open ℰ.HomReasoning
-
         ·-preserving : ∀ {Γ A} → G.₀ (F.₀ (Γ 𝒞-CC.· A)) ≡ G.₀ (F.₀ Γ) ℰ-CC.· A
         ·-preserving = PE.trans (PE.cong G.₀ F-CC.·-preserving) G-CC.·-preserving
+
+        {- FIXME(@doctorn) this is duplicated below -}
+        []-lemma : ∀ {A} → PE.trans (PE.cong G.₀ F-CC.[]-preserving) G-CC.[]-preserving
+                      ≡ PE.trans (PE.trans (PE.cong G.₀ F-CC.·-preserving) G-CC.·-preserving)
+                                 (PE.cong (ℰ-CC._· A) (PE.trans (PE.cong G.₀ F-CC.terminal-preserving) G-CC.terminal-preserving))
+        []-lemma with F-CC.terminal-preserving | G-CC.terminal-preserving
+        ... | PE.refl | PE.refl = begin
+            PE.trans (PE.cong G.₀ (PE.trans F-CC.·-preserving PE.refl)) (PE.trans (G-CC.·-preserving) PE.refl)
+          ≡⟨ PE.cong₂ PE.trans (PE.cong (PE.cong G.₀) (trans-refl 𝒟 F-CC.·-preserving)) (trans-refl ℰ _) ⟩
+            PE.trans (PE.cong G.₀ F-CC.·-preserving) G-CC.·-preserving
+          ≡⟨ PE.sym (trans-refl ℰ (PE.trans (PE.cong G.₀ F-CC.·-preserving) (G-CC.·-preserving))) ⟩
+            PE.trans (PE.trans (PE.cong G.₀ F-CC.·-preserving) G-CC.·-preserving) PE.refl
+          ∎
+          where open PE.≡-Reasoning
+
+
+        open ℰ.HomReasoning
 
 ∘-CCC : ∀ {a} (𝒰 : Set a) {𝒞-CCC : ContextualCartesianClosed 𝒞 𝒰} {𝒟-CCC : ContextualCartesianClosed 𝒟 𝒰} {ℰ-CCC : ContextualCartesianClosed ℰ 𝒰}
        → CCCFunctor 𝒰 𝒟-CCC ℰ-CCC G
@@ -125,10 +140,10 @@ private
       transport-≈ ℰ
         (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving (PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving) (G.₁ (F.₁ h))))
         (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving GF-CC.[]-preserving (G.₁ (F.₁ h))))
-        (ℰ-CCC.Λ-cong (Category.Equiv.reflexive ℰ (transport-≡₂ ℰ (G.₁ (F.₁ h)) PE.refl {!!})))
+        (ℰ-CCC.Λ-cong (Category.Equiv.reflexive ℰ (transport-≡₂ ℰ (G.₁ (F.₁ h)) PE.refl []-lemma)))
     ⟩
       transport′ ℰ PE.refl (PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving) (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving GF-CC.[]-preserving (G.₁ (F.₁ h))))
-    ≡⟨ transport-≡₂ ℰ (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving GF-CC.[]-preserving (G.₁ (F.₁ h)))) PE.refl (PE.cong PE.sym {!!}) ⟩
+    ≡⟨ transport-≡₂ ℰ (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving GF-CC.[]-preserving (G.₁ (F.₁ h)))) PE.refl (PE.cong PE.sym []-lemma) ⟩
       transport′ ℰ PE.refl GF-CC.[]-preserving (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving GF-CC.[]-preserving (G.₁ (F.₁ h))))
     ∎
   ; eval-preserving = begin
@@ -157,7 +172,7 @@ private
         (PE.trans (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· _) F-CCC.[]-preserving))) (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· _) G-CCC.[]-preserving)))
         (PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving)
         ℰ-CCC.eval
-    ≡⟨ transport-≡₂ ℰ ℰ-CCC.eval (PE.cong PE.sym {!!}) (PE.cong PE.sym {!!}) ⟩
+    ≡⟨ transport-≡₂ ℰ ℰ-CCC.eval (PE.cong PE.sym II) (PE.cong PE.sym []-lemma) ⟩
       transport′ ℰ (PE.trans GF-CC.·-preserving (PE.cong (ℰ-CCC._· _) GF-CC.[]-preserving)) GF-CC.[]-preserving ℰ-CCC.eval
     ∎
   }
@@ -168,5 +183,128 @@ private
         module 𝒞-CCC = ContextualCartesianClosed 𝒞-CCC
         module 𝒟-CCC = ContextualCartesianClosed 𝒟-CCC
         module ℰ-CCC = ContextualCartesianClosed ℰ-CCC
+
+        []-lemma : ∀ {A} → PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving ≡ GF-CC.[]-preserving {A}
+        []-lemma with F-CCC.terminal-preserving | G-CCC.terminal-preserving
+        ... | PE.refl | PE.refl = begin
+            PE.trans (PE.cong G.₀ (PE.trans F-CCC.·-preserving PE.refl)) (PE.trans (G-CCC.·-preserving) PE.refl)
+          ≡⟨ PE.cong₂ PE.trans (PE.cong (PE.cong G.₀) (trans-refl 𝒟 F-CCC.·-preserving)) (trans-refl ℰ _) ⟩
+            PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving
+          ≡⟨ PE.sym (trans-refl ℰ (PE.trans (PE.cong G.₀ F-CCC.·-preserving) (G-CCC.·-preserving))) ⟩
+            PE.trans (PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving) PE.refl
+          ∎
+          where open PE.≡-Reasoning
+
+        O : ∀ {Γ Γ'} {A} (p : Γ ≡ Γ') →
+            PE.trans (PE.cong G.₀ (PE.cong (𝒟-CCC._· A) p)) G-CCC.·-preserving
+              ≡ PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) (PE.cong G.₀ p))
+        O PE.refl = PE.sym (trans-refl ℰ _)
+
+        I : ∀ {A B} →
+            PE.trans
+              (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· A) (F-CCC.[]-preserving {B}))))
+              (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.[]-preserving))
+            ≡
+            PE.trans
+              (PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving)
+              (PE.cong (ℰ-CCC._· A) (PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving))
+        I {A} {B} with F-CCC.terminal-preserving | G-CCC.terminal-preserving
+        ... | PE.refl | PE.refl = begin
+            PE.trans
+              (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· A) (PE.trans F-CCC.·-preserving PE.refl))))
+              (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) (PE.trans G-CCC.·-preserving PE.refl)))
+          ≡⟨
+            PE.cong₂ PE.trans
+              (PE.cong (PE.cong G.₀) (PE.cong (PE.trans F-CCC.·-preserving) (PE.cong (PE.cong (𝒟-CCC._· A)) (trans-refl 𝒟 F-CCC.·-preserving))))
+              (PE.cong (PE.trans G-CCC.·-preserving) (PE.cong (PE.cong (ℰ-CCC._· A)) (trans-refl ℰ G-CCC.·-preserving)))
+          ⟩
+            PE.trans
+              (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· A) F-CCC.·-preserving)))
+              (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving))
+          ≡⟨
+            PE.cong (λ x → PE.trans x (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving)))
+              (trans-cong 𝒟 {p = F-CCC.·-preserving} {PE.cong (𝒟-CCC._· A) F-CCC.·-preserving} G.₀)
+          ⟩
+            PE.trans
+              (PE.trans (PE.cong G.₀ F-CCC.·-preserving) (PE.cong G.₀ (PE.cong (𝒟-CCC._· A) F-CCC.·-preserving)))
+              (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving))
+          ≡⟨
+            PE.sym (trans-assoc ℰ
+              {p = PE.cong G.₀ F-CCC.·-preserving}
+              {PE.cong G.₀ (PE.cong (𝒟-CCC._· A) F-CCC.·-preserving)}
+              {PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving)})
+          ⟩
+            PE.trans
+              (PE.cong G.₀ F-CCC.·-preserving)
+              (PE.trans (PE.cong G.₀ (PE.cong (𝒟-CCC._· A) F-CCC.·-preserving)) (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving)))
+          ≡⟨
+            PE.cong (PE.trans (PE.cong G.₀ F-CCC.·-preserving)) (trans-assoc ℰ
+              {p = PE.cong G.₀ (PE.cong (𝒟-CCC._· A) F-CCC.·-preserving)}
+              {G-CCC.·-preserving}
+              {PE.cong (ℰ-CCC._· A) G-CCC.·-preserving})
+          ⟩
+            PE.trans
+              (PE.cong G.₀ F-CCC.·-preserving)
+              (PE.trans (PE.trans (PE.cong G.₀ (PE.cong (𝒟-CCC._· A) F-CCC.·-preserving)) G-CCC.·-preserving) (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving))
+          ≡⟨ PE.cong (PE.trans (PE.cong G.₀ F-CCC.·-preserving)) (PE.cong (λ x → PE.trans x (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving)) (O F-CCC.·-preserving)) ⟩
+            PE.trans
+              (PE.cong G.₀ F-CCC.·-preserving)
+              (PE.trans (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) (PE.cong G.₀ F-CCC.·-preserving))) (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving))
+          ≡⟨
+            PE.cong (PE.trans (PE.cong G.₀ F-CCC.·-preserving))
+              (PE.sym (trans-assoc ℰ
+                {p = G-CCC.·-preserving}
+                {PE.cong (ℰ-CCC._· A) (PE.cong G.₀ F-CCC.·-preserving)}
+                {PE.cong (ℰ-CCC._· A) G-CCC.·-preserving}))
+          ⟩
+            PE.trans
+              (PE.cong G.₀ F-CCC.·-preserving)
+              (PE.trans G-CCC.·-preserving (PE.trans (PE.cong (ℰ-CCC._· A) (PE.cong G.₀ F-CCC.·-preserving)) (PE.cong (ℰ-CCC._· A) G-CCC.·-preserving)))
+          ≡⟨
+            PE.cong (PE.trans (PE.cong G.₀ F-CCC.·-preserving)) (PE.cong (PE.trans G-CCC.·-preserving)
+              (PE.sym (trans-cong ℰ {p = PE.cong G.₀ F-CCC.·-preserving} {G-CCC.·-preserving} (ℰ-CCC._· A))))
+          ⟩
+            PE.trans
+              (PE.cong G.₀ F-CCC.·-preserving)
+              (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) (PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving)))
+          ≡⟨
+            trans-assoc ℰ
+              {p = PE.cong G.₀ F-CCC.·-preserving}
+              {G-CCC.·-preserving}
+              {PE.cong (ℰ-CCC._· A) (PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving)}
+          ⟩
+            PE.trans
+              (PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving)
+              (PE.cong (ℰ-CCC._· A) (PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving))
+          ≡⟨
+            PE.cong (PE.trans GF-CC.·-preserving)
+              (PE.cong (PE.cong (ℰ-CCC._· A))
+                (PE.cong₂ PE.trans (PE.cong (PE.cong G.₀) (PE.sym (trans-refl 𝒟 F-CCC.·-preserving))) (PE.sym (trans-refl ℰ G-CCC.·-preserving))))
+          ⟩
+            PE.trans
+              GF-CC.·-preserving
+              (PE.cong (ℰ-CCC._· A) (PE.trans (PE.cong G.₀ (PE.trans F-CCC.·-preserving PE.refl))
+                (PE.trans G-CCC.·-preserving PE.refl)))
+          ∎
+          where open PE.≡-Reasoning
+
+        II : ∀ {A B} → PE.trans
+                        (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· A) (F-CCC.[]-preserving {B}))))
+                        (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.[]-preserving))
+                      ≡ PE.trans GF-CC.·-preserving (PE.cong (ℰ-CCC._· A) GF-CC.[]-preserving)
+        II {A} {B} = begin
+            PE.trans
+              (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· A) (F-CCC.[]-preserving {B}))))
+              (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· A) G-CCC.[]-preserving))
+          ≡⟨ I ⟩
+            PE.trans
+              (PE.trans (PE.cong G.₀ F-CCC.·-preserving) G-CCC.·-preserving)
+              (PE.cong (ℰ-CCC._· A) (PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving))
+          ≡⟨⟩
+            PE.trans GF-CC.·-preserving (PE.cong (ℰ-CCC._· A) (PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving))
+          ≡⟨ PE.cong (PE.trans GF-CC.·-preserving) (PE.cong (PE.cong (ℰ-CCC._· A)) []-lemma) ⟩
+            PE.trans GF-CC.·-preserving (PE.cong (ℰ-CCC._· A) GF-CC.[]-preserving)
+          ∎
+          where open PE.≡-Reasoning
 
         open ℰ.HomReasoning

@@ -59,3 +59,7 @@ trans-sym PE.refl = PE.refl
 
 trans-assoc : {p : A ≡ A'} {q : A' ≡ A''} {r : A'' ≡ A'''} → PE.trans p (PE.trans q r) ≡ PE.trans (PE.trans p q) r
 trans-assoc {p = PE.refl} {PE.refl} {PE.refl} = PE.refl
+
+trans-cong : ∀ {ℓ} {Q : Set ℓ} {p : A ≡ A'} {q : A' ≡ A''} (f : Obj → Q)
+             → PE.cong f (PE.trans p q) ≡ PE.trans (PE.cong f p) (PE.cong f q)
+trans-cong {p = PE.refl} {PE.refl} f = PE.refl
