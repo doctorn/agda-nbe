@@ -6,6 +6,8 @@ module TDPE.Gluing.Categories.Category.ContextualCartesianClosed
   {o ℓ e} (𝒞 : Category o ℓ e) {a} (𝒰 : Set a) where
 
 open import Level
+open import Relation.Binary.PropositionalEquality as PE using (_≡_)
+open import TDPE.Gluing.Transport 𝒞
 
 open import TDPE.Gluing.Categories.Category.ContextualCartesian 𝒞 using (ContextualCartesian)
 open import TDPE.Gluing.Contexts 𝒰 using (𝒰ᵀ) renaming (_⇒_ to _^_)
@@ -83,3 +85,8 @@ record ContextualCartesianClosed : Set (a ⊔ levelOfTerm 𝒞) where
       f ∘ ↑[ γ ]
     ∎)
     where open HomReasoning
+
+
+  transport-Λ : ∀ {Γ Γ'} {A} {B} (p : Γ ≡ Γ') (f : Γ' · A ⇒ [ B ])
+                → Λ (transport′ (PE.cong (_· _) p) PE.refl f) ≡ transport′ p PE.refl (Λ f)
+  transport-Λ PE.refl f = PE.refl

@@ -228,10 +228,6 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
       transport-𝓏 : ∀ {Γ Γ'} {A} (p : Γ ≡ Γ') → CC.𝓏 {Γ'} {A} ≡ transport (PE.cong (CC._· A) p) PE.refl CC.𝓏
       transport-𝓏 PE.refl = PE.refl
 
-      transport-Λ : ∀ {Γ Γ'} {A} {B} (p : Γ ≡ Γ') (f : Γ' CC.· A 𝒞.⇒ CC.[ B ])
-                    → CCC.Λ (transport′ (PE.cong (CC._· _) p) PE.refl f) ≡ transport′ p PE.refl (CCC.Λ f)
-      transport-Λ PE.refl f = PE.refl
-
       ⟦_⟧C-universal : (γ : 𝔗𝔪₀ Γ A) → F.₁ (! ∷ γ) ≈ transport′ I I ⟦ γ ⟧C
       ⟦_⟧S-universal : (γ : 𝔗𝔪 Δ Γ) → F.₁ γ ≈ transport′ I I ⟦ γ ⟧S
 
@@ -329,7 +325,7 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
               (PE.cong PE.sym (trans-sym (I {𝟙 · B}))))))
         ⟩
           transport′ PE.refl I (CCC.Λ (transport′ (PE.cong (CC._· _) I) PE.refl ⟦ f ⟧C))
-        ≈⟨ transport-≈ (CCC.Λ (transport′ (PE.cong (CC._· _) I) PE.refl ⟦ f ⟧C)) (transport′ I PE.refl (CCC.Λ ⟦ f ⟧C)) (reflexive (transport-Λ I ⟦ f ⟧C)) ⟩
+        ≈⟨ transport-≈ (CCC.Λ (transport′ (PE.cong (CC._· _) I) PE.refl ⟦ f ⟧C)) (transport′ I PE.refl (CCC.Λ ⟦ f ⟧C)) (reflexive (CCC.transport-Λ I ⟦ f ⟧C)) ⟩
           transport′ PE.refl I (transport′ I PE.refl (CCC.Λ ⟦ f ⟧C))
         ≡⟨ transport′-trans {p₁ = PE.refl} {I} {I} {PE.refl} (CCC.Λ ⟦ f ⟧C) ⟩
           transport′ I (PE.trans I PE.refl) (CCC.Λ ⟦ f ⟧C)
