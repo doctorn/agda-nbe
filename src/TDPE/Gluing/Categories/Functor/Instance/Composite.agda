@@ -131,7 +131,35 @@ private
     ≡⟨ transport-≡₂ ℰ (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving GF-CC.[]-preserving (G.₁ (F.₁ h)))) PE.refl (PE.cong PE.sym {!!}) ⟩
       transport′ ℰ PE.refl GF-CC.[]-preserving (ℰ-CCC.Λ (transport ℰ GF-CC.·-preserving GF-CC.[]-preserving (G.₁ (F.₁ h))))
     ∎
-  ; eval-preserving = {!!}
+  ; eval-preserving = begin
+      G.₁ (F.₁ 𝒞-CCC.eval)
+    ≈⟨ G.F-resp-≈ F-CCC.eval-preserving ⟩
+      G.₁ (transport′ 𝒟 (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· _) F-CCC.[]-preserving)) F-CCC.[]-preserving 𝒟-CCC.eval)
+    ≡⟨ transport′-F G 𝒟-CCC.eval (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· _) F-CCC.[]-preserving)) F-CCC.[]-preserving ⟩
+      transport′ ℰ (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· _) F-CCC.[]-preserving))) (PE.cong G.₀ F-CCC.[]-preserving) (G.₁ 𝒟-CCC.eval)
+    ≈⟨
+      transport-≈ ℰ
+        (G.₁ 𝒟-CCC.eval)
+        (transport′ ℰ (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· _) G-CCC.[]-preserving)) G-CCC.[]-preserving ℰ-CCC.eval)
+        G-CCC.eval-preserving
+    ⟩
+      transport′ ℰ (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· _) F-CCC.[]-preserving))) (PE.cong G.₀ F-CCC.[]-preserving)
+        (transport′ ℰ (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· _) G-CCC.[]-preserving)) G-CCC.[]-preserving ℰ-CCC.eval)
+    ≡⟨
+      transport′-trans ℰ
+        {p₁ = PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· _) F-CCC.[]-preserving))}
+        {PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· _) G-CCC.[]-preserving)}
+        {PE.cong G.₀ F-CCC.[]-preserving}
+        {G-CCC.[]-preserving}
+        ℰ-CCC.eval
+    ⟩
+      transport′ ℰ
+        (PE.trans (PE.cong G.₀ (PE.trans F-CCC.·-preserving (PE.cong (𝒟-CCC._· _) F-CCC.[]-preserving))) (PE.trans G-CCC.·-preserving (PE.cong (ℰ-CCC._· _) G-CCC.[]-preserving)))
+        (PE.trans (PE.cong G.₀ F-CCC.[]-preserving) G-CCC.[]-preserving)
+        ℰ-CCC.eval
+    ≡⟨ transport-≡₂ ℰ ℰ-CCC.eval (PE.cong PE.sym {!!}) (PE.cong PE.sym {!!}) ⟩
+      transport′ ℰ (PE.trans GF-CC.·-preserving (PE.cong (ℰ-CCC._· _) GF-CC.[]-preserving)) GF-CC.[]-preserving ℰ-CCC.eval
+    ∎
   }
   where module F-CCC = CCCFunctor F-CCC
         module G-CCC = CCCFunctor G-CCC
