@@ -368,4 +368,5 @@ module _ (CCC : ContextualCartesianClosed 𝒞 𝒰) where
           transport′ I I (CC.⟨ ⟦ γ ⟧S , ⟦ a ⟧C ⟩)
         ∎
 
-    ⟦_⟧-univeral = ⟦_⟧S-universal
+    ⟦_⟧-universal₀ = I
+    ⟦_⟧-universal = ⟦_⟧S-universal
