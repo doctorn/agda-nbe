@@ -43,14 +43,12 @@ private
                  → PE.subst (𝔗𝔪 Γ) (PE.cong (_· A) p) (γ ∷ a) ≡ PE.subst (𝔗𝔪 Γ) p γ  ∷ a
   subst-lemma₁ PE.refl = PE.refl
 
-{-
   subst-lemma₂ : ∀ {Γ} {F F′ : Psh.Obj} (p : F ≡ F′)
                  → {Δ Δ′ : ℭ} (q : Δ ≡ Δ′)
                  → (η : F Psh.⇒ Tm.₀ Δ) {γ : Setoid.Carrier (Functor.₀ F′ Γ)}
                  → PE.subst (𝔗𝔪 Γ) q (NaturalTransformation.η η Γ ⟨$⟩ PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym p) γ)
-                   ≡ NaturalTransformation.η (PE.subst₂ Psh._⇒_ p (PE.cong Tm.₀ q) η) Γ ⟨$⟩ γ
+                   ≡ NaturalTransformation.η (transport Psh p (PE.cong Tm.₀ q) η) Γ ⟨$⟩ γ
   subst-lemma₂ PE.refl PE.refl η = PE.refl
--}
 
   subst-× : ∀ {F F′ : Psh.Obj} {A Γ γ a} (p : F ≡ F′)
             → PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym (PE.cong (Psh._× 𝓡₀ A) p)) (γ , a)
@@ -111,7 +109,7 @@ private
   q-lemma {𝟙}     {Γ} {tt}    {tt}    tt          = !η
   q-lemma {Δ · A} {Γ} {γ , a} {δ , b} (γ≈δ , a≈b) = begin
       NaturalTransformation.η (q (Δ · A)) Γ ⟨$⟩ (γ , a)
-    ≈⟨ {! S.sym (Setoid.reflexive S.setoid (subst-lemma₂ (prj-lemma {Δ · A}) (PE.cong (_· A) (gl-lemma {Δ})) (q₀ (Δ · A)))) !} ⟩
+    ≈⟨ S.sym (Setoid.reflexive S.setoid (subst-lemma₂ (prj-lemma {Δ · A}) (PE.cong (_· A) (gl-lemma {Δ})) (q₀ (Δ · A)))) ⟩
       PE.subst (𝔗𝔪 Γ) (PE.cong (_· A) (gl-lemma {Δ}))
         (NaturalTransformation.η (q₀ (Δ · A)) Γ ⟨$⟩ (PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym (prj-lemma {Δ · A})) (γ , a)))
     ≡⟨ PE.cong (PE.subst (𝔗𝔪 Γ) (PE.cong (_· A) (gl-lemma {Δ}))) (PE.cong (NaturalTransformation.η (q₀ (Δ · A)) Γ ⟨$⟩_) (subst-× {A = A} (prj-lemma {Δ})))  ⟩
@@ -122,7 +120,7 @@ private
       PE.subst (𝔗𝔪 Γ) (gl-lemma {Δ})
         (NaturalTransformation.η (q₀ Δ) Γ ⟨$⟩
           (PE.subst (λ F → Setoid.Carrier (Functor.₀ F Γ)) (PE.sym (prj-lemma {Δ})) γ)) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ a))
-    ≈⟨ {! ∷-congₗ (Setoid.reflexive S.setoid (subst-lemma₂ (prj-lemma {Δ}) (gl-lemma {Δ}) (q₀ Δ))) !} ⟩
+    ≈⟨ ∷-congₗ (Setoid.reflexive S.setoid (subst-lemma₂ (prj-lemma {Δ}) (gl-lemma {Δ}) (q₀ Δ))) ⟩
       (NaturalTransformation.η (q Δ) Γ ⟨$⟩ γ) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ a))
     ≈⟨ ∷-cong₂ (q-lemma γ≈δ) (𝒵-cong (cong (𝔦₀.η A Γ Setoids.∘ ↓₀.η A Γ) a≈b)) ⟩
       (𝔦.η Δ Γ ⟨$⟩ (↓.η Δ Γ ⟨$⟩ δ)) ∷ 𝒵 (𝔦₀.η A Γ ⟨$⟩ (↓₀.η A Γ ⟨$⟩ b))
@@ -145,7 +143,7 @@ private
   prj₁ {Δ} {Γ} γ = transport Psh (prj-lemma {Δ}) (prj-lemma {Γ}) (prj.₁ γ)
 
   prj₁-cong : ∀ {Δ Γ} {γ δ : ⟦_⟧.₀ Δ Gl.⇒ ⟦_⟧.₀ Γ} → γ Gl.≈ δ → prj₁ {Δ} {Γ} γ Psh.≈ prj₁ {Δ} {Γ} δ
-  prj₁-cong {Δ} {Γ} {γ} {δ} γ≈δ = {!!}
+  prj₁-cong {Δ} {Γ} {γ} {δ} γ≈δ = transport-≈ Psh {p = prj-lemma {Δ}} {prj-lemma {Γ}} (prj.₁ γ) (prj.₁ δ) (prj.F-resp-≈ {⟦_⟧.₀ Δ} {⟦_⟧.₀ Γ} {γ} {δ} γ≈δ)
 
   prj′ : ∀ {Δ Γ} → Category.hom-setoid Gl {⟦_⟧.₀ Δ} {⟦_⟧.₀ Γ} Setoids.⇒ Category.hom-setoid Psh.Psh {𝓡 Δ} {𝓡 Γ}
   prj′ {Δ} {Γ} = record
@@ -209,7 +207,7 @@ theorem {Δ} {Γ} {γ} = begin
                 Psh.∘ (transport Psh (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Γ})) (q₀ Γ))) Ξ ⟨$⟩ x
           ≡⟨ PE.cong (λ η → NaturalTransformation.η η Ξ ⟨$⟩ x) (transport-∘ Psh {p = prj-lemma {Γ}} {PE.cong Tm.₀ (gl-lemma {Γ})} {PE.cong Tm.₀ (gl-lemma {Δ})} (Tm.₁ δ₀) (q₀ Γ)) ⟩
             NaturalTransformation.η (transport Psh (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (Tm.₁ δ₀ Psh.∘ q₀ Γ)) Ξ ⟨$⟩ x
-          ≡⟨ {!PE.cong (_⟨$⟩ x) (transport-η (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})))!} ⟩
+          ≡⟨ PE.cong (_⟨$⟩ x) (transport-η (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ}))) ⟩
             transport (Setoids _ _)
               (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
               (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
@@ -226,7 +224,7 @@ theorem {Δ} {Γ} {γ} = begin
               (PE.cong₂ Functor.₀ (prj-lemma {Γ}) PE.refl)
               (PE.cong₂ Functor.₀ (PE.cong Tm.₀ (gl-lemma {Δ})) PE.refl)
               (NaturalTransformation.η (q₀ Δ Psh.∘ v₀) Ξ) ⟨$⟩ y
-          ≡⟨ PE.sym {!PE.cong (_⟨$⟩ y) (transport-η (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})))!} ⟩
+          ≡⟨ PE.sym (PE.cong (_⟨$⟩ y) (transport-η (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})))) ⟩
             NaturalTransformation.η (transport Psh (prj-lemma {Γ}) (PE.cong Tm.₀ (gl-lemma {Δ})) (q₀ Δ Psh.∘ v₀)) Ξ ⟨$⟩ y
           ≡⟨ PE.sym (PE.cong (λ η → NaturalTransformation.η η Ξ ⟨$⟩ y) (transport-∘ Psh {p = prj-lemma {Γ}} {prj-lemma {Δ}} {PE.cong Tm.₀ (gl-lemma {Δ})} (q₀ Δ) v₀)) ⟩
             NaturalTransformation.η
@@ -260,12 +258,28 @@ theorem {Δ} {Γ} {γ} = begin
               (PE.trans (I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Γ}) (PE.sym (I.⟦ Syntax.CCC ⟧-universal₀ gl∘⟦_⟧-CCC {Γ})))
               (PE.trans (I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Δ}) (PE.sym (I.⟦ Syntax.CCC ⟧-universal₀ gl∘⟦_⟧-CCC {Δ})))
               γ
-          ≡⟨ transport-≡₂ 𝕋𝕞 γ {!!} {!!} ⟩
+          ≡⟨ transport-≡₂ 𝕋𝕞 γ transport-lemma transport-lemma ⟩
             transport 𝕋𝕞 (PE.sym gl-lemma) (PE.sym gl-lemma) γ
           ∎
-          where open Reasoning S.setoid
+          where module I = Interpretation {o = a} 𝕋𝕞
 
-                module I = Interpretation {o = a} 𝕋𝕞
+                transport-lemma : ∀ {Γ} → PE.trans (I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Γ}) (PE.sym (I.⟦ Syntax.CCC ⟧-universal₀ gl∘⟦_⟧-CCC {Γ}))
+                                            ≡ PE.sym gl-lemma
+                transport-lemma {𝟙}     = PE.refl
+                transport-lemma {Γ · A} = begin
+                    PE.trans (PE.cong (_· A) (I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Γ})) (PE.sym (PE.cong (_· A) (I.⟦ Syntax.CCC ⟧-universal₀ gl∘⟦_⟧-CCC {Γ})))
+                  ≡⟨ PE.cong (PE.trans (PE.cong (_· A) (I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Γ}))) (PE.sym (cong-sym 𝕋𝕞 (_· A))) ⟩
+                    PE.trans (PE.cong (_· A) (I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Γ})) (PE.cong (_· A) (PE.sym (I.⟦ Syntax.CCC ⟧-universal₀ gl∘⟦_⟧-CCC {Γ})))
+                  ≡⟨ PE.sym (trans-cong 𝕋𝕞 {p = I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Γ}} {PE.sym (I.⟦ Syntax.CCC ⟧-universal₀ gl∘⟦_⟧-CCC {Γ})} (_· A)) ⟩
+                    PE.cong (_· A) (PE.trans (I.⟦ Syntax.CCC ⟧-universal₀ (id-CCC 𝒰 Syntax.CCC) {Γ}) (PE.sym (I.⟦ Syntax.CCC ⟧-universal₀ gl∘⟦_⟧-CCC {Γ})))
+                  ≡⟨ PE.cong (PE.cong (_· A)) transport-lemma ⟩
+                    PE.cong (_· A) (PE.sym gl-lemma)
+                  ≡⟨ cong-sym 𝕋𝕞 (_· A) ⟩
+                    PE.sym (PE.cong (_· A) gl-lemma)
+                  ∎
+                  where open PE.≡-Reasoning
+
+                open Reasoning S.setoid
 
         open Reasoning S.setoid
 
