@@ -1,3 +1,0 @@
-name: agda-tdpe
-depend: standard-library agda-categories
-include: src/

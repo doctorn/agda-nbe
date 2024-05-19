@@ -9,6 +9,8 @@ import TDPE.Gluing.Categories.Category.Instance.Presheaves
 import TDPE.Gluing.Categories.Category.Instance.Setoids
 import TDPE.Gluing.Categories.Functor.ContextualCartesian
 import TDPE.Gluing.Categories.Functor.ContextualCartesianClosed
+import TDPE.Gluing.Categories.Functor.Instance.Composite
+import TDPE.Gluing.Categories.Functor.Instance.Identity
 import TDPE.Gluing.Categories.Functor.Properties
 import TDPE.Gluing.Contexts
 import TDPE.Gluing.Embedding
@@ -22,6 +24,8 @@ import TDPE.Gluing.Glue.Yoga
 import TDPE.Gluing.Interpretation
 import TDPE.Gluing.Representation
 import TDPE.Gluing.Syntax
+import TDPE.Gluing.Transport
+import TDPE.Gluing.Transport.Functor
 import TDPE.Gluing.Util.Equivalence
 import TDPE.Gluing.Weakenings
 import TDPE.Types
