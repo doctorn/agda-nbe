@@ -1,3 +1,3 @@
-# `agda-tdpe`
+# `agda-nbe`
 
 > _(Working title.)_
